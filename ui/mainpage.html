@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Time Blocking Diary - Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#196ee6",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111821",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen flex flex-col">
+<!-- Header -->
+<header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between z-10 sticky top-0">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-xl">event_note</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight">Time Blocking Diary</h1>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden border-2 border-transparent hover:border-primary transition-colors cursor-pointer ml-2">
+<img alt="Profile" class="w-full h-full object-cover" data-alt="User profile portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6vBaUdBdi5W4qs9JVNh7q22t4jqa8vR6-ZRqbuemnEccCGCGR1aLPGeymi1TPomh8s7bpxtGIrXskAEw0MnHWKaoCy8AZzT3hKjB8aNyJLN3ZzxQYHkyvuYdnxq0yeljb1dp3742QC8M19Z63AaxQuy-XcHkuMb_RC7XiTi2VxAOWBZLpU8lkeRe5p7Pm7fIIahgRFJby-o0GH45PqGorBQuPSJoOGatds1rhEnyswSLaMmr5jKPlyVWrfZRVdfeFz_t_sr92-eU"/>
+</div>
+</div>
+</header>
+<!-- Main Layout -->
+<div class="flex flex-1 overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 p-4 hidden md:flex flex-col gap-2 overflow-y-auto">
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary font-medium" href="#">
+<span class="material-symbols-outlined">home</span>
+                    홈
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+                    캘린더
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+                    통계
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+                    프로필
+                </a>
+</nav>
+<div class="mt-auto pt-4 border-t border-slate-200 dark:border-slate-800">
+<div class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+<p class="text-xs text-slate-500 dark:text-slate-400 font-medium mb-1">이번 주 목표 달성</p>
+<div class="flex items-end gap-2">
+<span class="text-2xl font-bold text-slate-900 dark:text-white">82%</span>
+<span class="text-sm text-green-500 flex items-center mb-1"><span class="material-symbols-outlined text-[16px]">arrow_upward</span> 5%</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col gap-8">
+<!-- Top Section: Identity & Quick Add -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+<div>
+<h2 class="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">나의 정체성</h2>
+<p class="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100">"나는 매일매일 성장하는 사람이다."</p>
+</div>
+<button class="bg-primary hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors shadow-sm whitespace-nowrap">
+<span class="material-symbols-outlined">add</span>
+                    새 로그 작성
+                </button>
+</div>
+<!-- Grid: Calendar & Stats -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Calendar Card -->
+<div class="lg:col-span-5 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+<div class="flex items-center justify-between mb-6">
+<button class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">11월 2023</h3>
+<button class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+<div class="grid grid-cols-7 text-center mb-2">
+<div class="text-xs font-semibold text-slate-400 py-2">일</div>
+<div class="text-xs font-semibold text-slate-400 py-2">월</div>
+<div class="text-xs font-semibold text-slate-400 py-2">화</div>
+<div class="text-xs font-semibold text-slate-400 py-2">수</div>
+<div class="text-xs font-semibold text-slate-400 py-2">목</div>
+<div class="text-xs font-semibold text-slate-400 py-2">금</div>
+<div class="text-xs font-semibold text-slate-400 py-2">토</div>
+</div>
+<div class="grid grid-cols-7 gap-1 text-center">
+<!-- Empty slots for offset -->
+<div class="aspect-square"></div>
+<div class="aspect-square"></div>
+<div class="aspect-square"></div>
+<!-- Days -->
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">1</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">2</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors relative">3
+                            <span class="absolute bottom-1 w-1 h-1 bg-green-400 rounded-full"></span>
+</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors relative">4
+                            <span class="absolute bottom-1 w-1 h-1 bg-green-400 rounded-full"></span>
+</button>
+<!-- Current Day -->
+<button class="aspect-square flex items-center justify-center rounded-full bg-primary text-white text-sm font-bold shadow-md shadow-primary/30">5</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">6</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">7</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">8</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">9</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">10</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">11</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">12</button>
+<!-- Rest of days simplified for brevity -->
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">13</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">14</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">15</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">16</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">17</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">18</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">19</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">20</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">21</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">22</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">23</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">24</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">25</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">26</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">27</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">28</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">29</button>
+<button class="aspect-square flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium transition-colors">30</button>
+</div>
+</div>
+<!-- Big 3 Stats Card -->
+<div class="lg:col-span-7 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">이번 주 'Big 3' 달성률</h3>
+<button class="text-primary text-sm font-medium hover:underline">자세히 보기</button>
+</div>
+<div class="flex-1 flex flex-col justify-center gap-6">
+<!-- Stat Item 1 -->
+<div>
+<div class="flex justify-between items-end mb-2">
+<span class="font-medium text-slate-700 dark:text-slate-300">1. 주요 프로젝트 마일스톤 완료</span>
+<span class="text-sm font-bold text-slate-900 dark:text-white">100%</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
+<div class="bg-primary h-3 rounded-full" style="width: 100%"></div>
+</div>
+</div>
+<!-- Stat Item 2 -->
+<div>
+<div class="flex justify-between items-end mb-2">
+<span class="font-medium text-slate-700 dark:text-slate-300">2. 주 3회 운동하기</span>
+<span class="text-sm font-bold text-slate-900 dark:text-white">66%</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
+<div class="bg-primary/80 h-3 rounded-full" style="width: 66%"></div>
+</div>
+</div>
+<!-- Stat Item 3 -->
+<div>
+<div class="flex justify-between items-end mb-2">
+<span class="font-medium text-slate-700 dark:text-slate-300">3. 독서 1권 완독</span>
+<span class="text-sm font-bold text-slate-900 dark:text-white">40%</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
+<div class="bg-primary/60 h-3 rounded-full" style="width: 40%"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Logs Section -->
+<div>
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">최근 데일리 로그</h3>
+<button class="text-sm text-slate-500 hover:text-primary transition-colors">모두 보기</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+<!-- Log Card 1 -->
+<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 hover:shadow-md transition-shadow cursor-pointer group">
+<div class="flex justify-between items-start mb-3">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-green-500"></div>
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-300">11월 4일 (토)</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors text-lg">open_in_new</span>
+</div>
+<p class="text-slate-600 dark:text-slate-400 text-sm line-clamp-2 mb-4">주말이지만 오전에 일찍 일어나서 계획했던 코딩 공부를 2시간 동안 집중해서 완료했다. 오후에는 산책...</p>
+<div class="flex gap-2">
+<span class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs rounded-md">코딩</span>
+<span class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs rounded-md">휴식</span>
+</div>
+</div>
+<!-- Log Card 2 -->
+<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 hover:shadow-md transition-shadow cursor-pointer group">
+<div class="flex justify-between items-start mb-3">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-green-500"></div>
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-300">11월 3일 (금)</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors text-lg">open_in_new</span>
+</div>
+<p class="text-slate-600 dark:text-slate-400 text-sm line-clamp-2 mb-4">업무 회의가 길어져서 타임블록 일정이 조금 밀렸지만, 우선순위에 따라 중요한 업무부터 처리하여 큰 문제는...</p>
+<div class="flex gap-2">
+<span class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs rounded-md">업무</span>
+<span class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs rounded-md">회의</span>
+</div>
+</div>
+<!-- Log Card 3 -->
+<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 hover:shadow-md transition-shadow cursor-pointer group hidden xl:block">
+<div class="flex justify-between items-start mb-3">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-orange-400"></div>
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-300">11월 2일 (목)</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors text-lg">open_in_new</span>
+</div>
+<p class="text-slate-600 dark:text-slate-400 text-sm line-clamp-2 mb-4">컨디션이 좋지 않아 오후 일정을 많이 소화하지 못했다. 내일은 무리하지 않고 천천히 진행해야겠다.</p>
+<div class="flex gap-2">
+<span class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs rounded-md">건강</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
