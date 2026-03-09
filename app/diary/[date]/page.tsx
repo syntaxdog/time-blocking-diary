@@ -13,6 +13,7 @@ import FutureViz from '@/components/FutureViz';
 import Identity from '@/components/Identity';
 import Motivation from '@/components/Motivation';
 import Gratitude from '@/components/Gratitude';
+import MorningRoutine from '@/components/MorningRoutine';
 
 export default function DiaryPage({ params }: { params: Promise<{ date: string }> }) {
   const { date } = use(params);
@@ -97,18 +98,7 @@ export default function DiaryPage({ params }: { params: Promise<{ date: string }
           {/* Middle Column: Execution & Priorities */}
           <div className="lg:col-span-5 space-y-6 order-3 lg:order-2">
             {/* Morning Routine */}
-            <section className="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-orange-400 text-xl">wb_sunny</span>
-                  <h2 className="font-bold text-slate-800">기상 직후 할 일</h2>
-                </div>
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Morning Routine</span>
-              </div>
-              <div className="p-4 bg-slate-50 rounded-lg border border-dashed border-slate-300">
-                <p className="text-sm text-slate-500 italic text-center">오늘 아침의 첫 단추를 채우세요.</p>
-              </div>
-            </section>
+            <MorningRoutine date={date} />
 
             <BigThree date={date} />
             <BrainDump date={date} />

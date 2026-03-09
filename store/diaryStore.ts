@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { DiaryData, TimeBlock, BrainDumpItem, BlockColor } from '@/types/diary';
+import type { DiaryData, TimeBlock, BrainDumpItem } from '@/types/diary';
 import { today, uid } from '@/lib/utils';
 
 function emptyDiary(date: string): DiaryData {
@@ -13,9 +13,11 @@ function emptyDiary(date: string): DiaryData {
     timeBlocks: [],
     feedback: { morning: '', midday: '', evening: '' },
     futureViz: '',
+    futureVizImage: '',
     identity: '',
     motivation: '',
-    gratitude: '',
+    gratitude: ['', '', ''],
+    morningRoutine: '',
   };
 }
 
@@ -48,7 +50,10 @@ type DiaryStore = {
   setFeedback: (date: string, key: 'morning' | 'midday' | 'evening', value: string) => void;
 
   // 텍스트 필드들
-  setField: (date: string, field: 'futureViz' | 'identity' | 'motivation' | 'gratitude', value: string) => void;
+  setField: (date: string, field: 'futureViz' | 'futureVizImage' | 'identity' | 'motivation' | 'morningRoutine', value: string) => void;
+
+  // 감사 일기
+  setGratitude: (date: string, idx: 0 | 1 | 2, value: string) => void;
 };
 
 export const useDiaryStore = create<DiaryStore>()(
@@ -193,6 +198,14 @@ export const useDiaryStore = create<DiaryStore>()(
           return {
             diaries: { ...s.diaries, [date]: { ...diary, [field]: value } },
           };
+        }),
+
+      setGratitude: (date, idx, value) =>
+        set((s) => {
+          const diary = s.diaries[date] ?? emptyDiary(date);
+          const gratitude = [...diary.gratitude] as [string, string, string];
+          gratitude[idx] = value;
+          return { diaries: { ...s.diaries, [date]: { ...diary, gratitude } } };
         }),
     }),
     { name: 'time-blocking-diary' }

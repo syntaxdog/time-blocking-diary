@@ -28,7 +28,9 @@ export type DiaryData = {
   timeBlocks: TimeBlock[];
   feedback: FeedbackType;
   futureViz: string;
+  futureVizImage: string; // base64 data URL or external URL
   identity: string;
   motivation: string;
-  gratitude: string;
+  gratitude: [string, string, string];
+  morningRoutine: string;
 };

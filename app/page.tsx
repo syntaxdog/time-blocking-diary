@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { today } from '@/lib/utils';
 import { useState } from 'react';
+import Sidebar from '@/components/Sidebar';
 
 export default function HomePage() {
   const router = useRouter();
@@ -54,37 +55,7 @@ export default function HomePage() {
       {/* Main Layout */}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Navigation */}
-        <aside className="w-64 bg-white border-r border-slate-200 p-4 hidden md:flex flex-col gap-2 overflow-y-auto">
-          <nav className="flex flex-col gap-1">
-            <a className="flex items-center gap-3 px-4 py-3 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] font-medium" href="#">
-              <span className="material-symbols-outlined">home</span>
-              홈
-            </a>
-            <a className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-100 text-slate-700 transition-colors" href="#">
-              <span className="material-symbols-outlined">calendar_month</span>
-              캘린더
-            </a>
-            <a className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-100 text-slate-700 transition-colors" href="#">
-              <span className="material-symbols-outlined">bar_chart</span>
-              통계
-            </a>
-            <a className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-100 text-slate-700 transition-colors" href="#">
-              <span className="material-symbols-outlined">person</span>
-              프로필
-            </a>
-          </nav>
-          <div className="mt-auto pt-4 border-t border-slate-200">
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-              <p className="text-xs text-slate-500 font-medium mb-1">이번 주 목표 달성</p>
-              <div className="flex items-end gap-2">
-                <span className="text-2xl font-bold text-slate-900">82%</span>
-                <span className="text-sm text-green-500 flex items-center mb-1">
-                  <span className="material-symbols-outlined text-[16px]">arrow_upward</span> 5%
-                </span>
-              </div>
-            </div>
-          </div>
-        </aside>
+        <Sidebar active="home" />
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col gap-8">

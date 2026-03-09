@@ -3,7 +3,7 @@
 import { useDiaryStore } from '@/store/diaryStore';
 
 export default function Identity({ date }: { date: string }) {
-  const { diaries, setIdentity } = useDiaryStore();
+  const { diaries, setField } = useDiaryStore();
   const diary = diaries[date];
 
   return (
@@ -16,7 +16,7 @@ export default function Identity({ date }: { date: string }) {
         className="w-full ruled-lines min-h-[100px] text-sm text-slate-600 resize-none bg-transparent border-none focus:ring-0 p-0 outline-none"
         placeholder="나는 어떤 사람인가? 나의 정체성을 기록하세요..."
         value={diary?.identity ?? ''}
-        onChange={(e) => setIdentity(date, e.target.value)}
+        onChange={(e) => setField(date, 'identity', e.target.value)}
       />
     </section>
   );

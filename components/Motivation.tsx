@@ -3,7 +3,7 @@
 import { useDiaryStore } from '@/store/diaryStore';
 
 export default function Motivation({ date }: { date: string }) {
-  const { diaries, setMotivation } = useDiaryStore();
+  const { diaries, setField } = useDiaryStore();
   const diary = diaries[date];
 
   return (
@@ -16,7 +16,7 @@ export default function Motivation({ date }: { date: string }) {
         className="w-full ruled-lines min-h-[100px] text-sm text-slate-600 resize-none bg-transparent border-none focus:ring-0 p-0 outline-none"
         placeholder="오늘의 내적 동기를 기록하세요..."
         value={diary?.motivation ?? ''}
-        onChange={(e) => setMotivation(date, e.target.value)}
+        onChange={(e) => setField(date, 'motivation', e.target.value)}
       />
     </section>
   );
