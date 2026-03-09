@@ -57,7 +57,7 @@ export default function FutureViz({ date }: { date: string }) {
   };
 
   return (
-    <section className="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+    <section className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 overflow-hidden">
       <div className="flex items-center gap-2 mb-4">
         <span className="material-symbols-outlined text-[var(--color-primary)] text-xl">auto_awesome</span>
         <h2 className="font-bold text-slate-800">미래 시각화</h2>
@@ -155,6 +155,7 @@ export default function FutureViz({ date }: { date: string }) {
       <textarea
         className="w-full bg-transparent border-none focus:ring-0 p-0 text-sm text-slate-600 resize-none h-20 outline-none"
         placeholder="생생하게 꿈꾸는 미래의 모습을 기록하세요..."
+        maxLength={200}
         value={diary?.futureViz ?? ''}
         onChange={(e) => setField(date, 'futureViz', e.target.value)}
       />

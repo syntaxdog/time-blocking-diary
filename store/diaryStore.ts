@@ -21,16 +21,22 @@ function emptyDiary(date: string): DiaryData {
   };
 }
 
+type ThemeMode = 'light' | 'dark' | 'system';
+
 type DiaryStore = {
   // 날짜별 다이어리 맵
   diaries: Record<string, DiaryData>;
   currentDate: string;
+  theme: ThemeMode;
 
   // 현재 날짜 다이어리 가져오기 (없으면 빈 것 생성)
   getOrCreate: (date: string) => DiaryData;
 
   // 날짜 변경
   setDate: (date: string) => void;
+
+  // 테마
+  setTheme: (mode: ThemeMode) => void;
 
   // Big 3
   setBigThree: (date: string, idx: 0 | 1 | 2, value: string) => void;
@@ -54,6 +60,10 @@ type DiaryStore = {
 
   // 감사 일기
   setGratitude: (date: string, idx: 0 | 1 | 2, value: string) => void;
+
+  // 전역 비전/가치관 (프로필에서 설정)
+  userVision: string;
+  setUserVision: (vision: string) => void;
 };
 
 export const useDiaryStore = create<DiaryStore>()(
@@ -61,6 +71,11 @@ export const useDiaryStore = create<DiaryStore>()(
     (set, get) => ({
       diaries: {},
       currentDate: today(),
+      theme: 'light' as ThemeMode,
+      userVision: '나는 매일매일 성장하는 사람이다.',
+
+      setTheme: (mode) => set({ theme: mode }),
+      setUserVision: (vision) => set({ userVision: vision }),
 
       getOrCreate: (date) => {
         const { diaries } = get();

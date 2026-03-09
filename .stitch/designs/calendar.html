@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+
+<html lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>타임 블로킹 다이어리 - 캘린더</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#196ee6",
+              "background-light": "#f6f7f8",
+              "background-dark": "#111821",
+            },
+            fontFamily: {
+              "display": ["Inter", "Noto Sans KR", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col shrink-0">
+<div class="p-6 flex flex-col gap-6 h-full">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">event_note</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-slate-900 dark:text-white text-base font-bold leading-none">타임 블로킹</h1>
+<p class="text-slate-500 dark:text-slate-400 text-xs mt-1">오늘도 생산적인 하루를!</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1 flex-1">
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">dashboard</span>
+<span class="text-sm font-medium">대시보드</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 bg-primary/10 text-primary rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1">calendar_month</span>
+<span class="text-sm font-bold">캘린더</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">bar_chart</span>
+<span class="text-sm font-medium">통계</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">settings</span>
+<span class="text-sm font-medium">설정</span>
+</a>
+</nav>
+<div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-4">
+<button class="w-full bg-primary hover:bg-primary/90 text-white rounded-lg h-11 flex items-center justify-center gap-2 font-bold text-sm transition-shadow shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span>새 일정 추가</span>
+</button>
+<div class="flex items-center gap-3 px-3 py-2">
+<div class="size-8 rounded-full bg-slate-200" data-alt="사용자 프로필 이미지"></div>
+<div class="flex-1 min-w-0">
+<p class="text-xs font-bold truncate">김지우 님</p>
+<p class="text-[10px] text-slate-500 truncate">Premium Plan</p>
+</div>
+<button class="text-slate-400 hover:text-slate-600">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+</button>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col overflow-hidden">
+<!-- Header -->
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between px-8 shrink-0">
+<div class="flex items-center gap-4">
+<h2 class="text-lg font-bold">2023년 10월</h2>
+<div class="flex items-center border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+<button class="p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<div class="w-px h-4 bg-slate-200 dark:bg-slate-700"></div>
+<button class="p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+<button class="px-3 py-1.5 text-xs font-medium border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800">오늘</button>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[20px]">search</span>
+<input class="pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm w-64 focus:ring-2 focus:ring-primary/20" placeholder="일정 검색..." type="text"/>
+</div>
+<button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+</button>
+</div>
+</header>
+<!-- Calendar and Side Panel Split -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Full Month Calendar View -->
+<div class="flex-1 bg-white dark:bg-slate-900 p-6 overflow-y-auto">
+<div class="calendar-grid border-l border-t border-slate-100 dark:border-slate-800 h-full min-h-[600px]">
+<!-- Weekdays Header -->
+<div class="p-3 text-center text-xs font-bold text-red-500 border-r border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">일</div>
+<div class="p-3 text-center text-xs font-bold text-slate-500 border-r border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">월</div>
+<div class="p-3 text-center text-xs font-bold text-slate-500 border-r border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">화</div>
+<div class="p-3 text-center text-xs font-bold text-slate-500 border-r border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">수</div>
+<div class="p-3 text-center text-xs font-bold text-slate-500 border-r border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">목</div>
+<div class="p-3 text-center text-xs font-bold text-slate-500 border-r border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">금</div>
+<div class="p-3 text-center text-xs font-bold text-slate-700 border-r border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">토</div>
+<!-- Calendar Days (Mockup) -->
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800 text-slate-300">27</div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800 text-slate-300">28</div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800 text-slate-300">29</div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800 text-slate-300">30</div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800">
+<span class="text-sm font-medium">1</span>
+<div class="mt-1 space-y-1">
+<div class="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded border-l-2 border-primary truncate">운동 루틴</div>
+</div>
+</div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800 bg-primary/5">
+<span class="text-sm font-medium">2</span>
+<div class="mt-1 flex gap-1">
+<span class="size-1.5 rounded-full bg-green-500"></span>
+</div>
+</div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800">
+<span class="text-sm font-medium">3</span>
+</div>
+<!-- Current Day Highlighted -->
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/20">
+<span class="size-7 flex items-center justify-center rounded-full bg-primary text-white text-sm font-bold shadow-sm">5</span>
+<div class="mt-2 space-y-1">
+<div class="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded border-l-2 border-primary truncate">기획 미팅</div>
+<div class="text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded truncate">독서 시간</div>
+</div>
+</div>
+<!-- Multiple days rendering for visualization -->
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">6</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">7</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">8</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">9</span><div class="mt-1 flex gap-1"><span class="size-1.5 rounded-full bg-green-500"></span></div></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">10</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">11</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">12</span><div class="mt-1 flex gap-1"><span class="size-1.5 rounded-full bg-green-500"></span></div></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">13</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm text-slate-700 font-medium">14</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm text-red-500">15</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">16</span><div class="mt-1 flex gap-1"><span class="size-1.5 rounded-full bg-green-500"></span><span class="size-1.5 rounded-full bg-green-500"></span></div></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">17</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">18</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">19</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">20</span><div class="mt-1 flex gap-1"><span class="size-1.5 rounded-full bg-green-500"></span></div></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">21</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm text-red-500">22</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">23</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">24</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">25</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">26</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">27</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">28</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm text-red-500">29</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">30</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800"><span class="text-sm">31</span></div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800 text-slate-300">1</div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800 text-slate-300">2</div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800 text-slate-300">3</div>
+<div class="min-h-[100px] p-2 border-r border-b border-slate-100 dark:border-slate-800 text-slate-300">4</div>
+</div>
+</div>
+<!-- Side Panel (Selected Day's Summary) -->
+<aside class="w-80 bg-background-light dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 p-6 flex flex-col gap-6 overflow-y-auto">
+<div>
+<h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">오늘의 일정 (10월 5일)</h3>
+<div class="space-y-3">
+<!-- Event Item -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex gap-4 items-start">
+<div class="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-bold truncate">기획 미팅</p>
+<p class="text-xs text-slate-500 mt-0.5">오전 10:00 - 11:30</p>
+<div class="mt-2 flex items-center gap-1.5">
+<div class="size-2 rounded-full bg-primary"></div>
+<span class="text-[11px] text-slate-600 dark:text-slate-400">진행 중</span>
+</div>
+</div>
+</div>
+<!-- Event Item -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex gap-4 items-start">
+<div class="size-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 shrink-0">
+<span class="material-symbols-outlined text-[20px]">design_services</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-bold truncate">디자인 시스템 업데이트</p>
+<p class="text-xs text-slate-500 mt-0.5">오후 02:00 - 04:00</p>
+<div class="mt-2 flex items-center gap-1.5">
+<div class="size-2 rounded-full bg-slate-300"></div>
+<span class="text-[11px] text-slate-600 dark:text-slate-400">대기 중</span>
+</div>
+</div>
+</div>
+<!-- Event Item -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex gap-4 items-start opacity-70">
+<div class="size-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 shrink-0">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-bold truncate">오전 명상</p>
+<p class="text-xs text-slate-500 mt-0.5">오전 08:00 - 08:30</p>
+<div class="mt-2 flex items-center gap-1.5">
+<div class="size-2 rounded-full bg-green-500"></div>
+<span class="text-[11px] text-slate-600 dark:text-slate-400">완료됨</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div>
+<h3 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">월간 진행도</h3>
+<div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+<div class="flex items-end justify-between mb-2">
+<span class="text-2xl font-bold">68%</span>
+<span class="text-xs text-slate-500 mb-1">총 31일 중 21일 완료</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[68%] rounded-full"></div>
+</div>
+<p class="text-[11px] text-slate-500 mt-4 leading-relaxed">지난달보다 생산성이 <span class="text-primary font-bold">12%</span> 향상되었습니다. 훌륭한 페이스입니다!</p>
+</div>
+</div>
+<div class="mt-auto">
+<div class="bg-primary/5 border border-primary/10 p-4 rounded-xl">
+<div class="flex items-center gap-2 text-primary mb-2">
+<span class="material-symbols-outlined text-[18px]">lightbulb</span>
+<span class="text-xs font-bold">생산성 팁</span>
+</div>
+<p class="text-xs text-slate-600 dark:text-slate-400 leading-normal">
+                                '타임 블로킹'은 한 번에 한 가지 일에 집중하게 도와줍니다. 오늘 오후에는 알림을 끄고 집중 시간을 가져보세요.
+                            </p>
+</div>
+</div>
+</aside>
+</div>
+</main>
+</div>
+</body></html>

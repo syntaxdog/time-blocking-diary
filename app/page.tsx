@@ -3,10 +3,12 @@
 import { useRouter } from 'next/navigation';
 import { today } from '@/lib/utils';
 import { useState } from 'react';
+import { useDiaryStore } from '@/store/diaryStore';
 import Sidebar from '@/components/Sidebar';
 
 export default function HomePage() {
   const router = useRouter();
+  const { userVision } = useDiaryStore();
   const [currentMonth] = useState(() => {
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() };
@@ -59,19 +61,11 @@ export default function HomePage() {
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col gap-8">
-          {/* Identity & Quick Add */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <div>
-              <h2 className="text-sm text-slate-500 font-medium mb-1">나의 정체성</h2>
-              <p className="text-xl md:text-2xl font-bold text-slate-800">&quot;나는 매일매일 성장하는 사람이다.&quot;</p>
-            </div>
-            <button
-              onClick={() => goToDiary(todayDay)}
-              className="bg-[var(--color-primary)] hover:opacity-90 text-white px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors shadow-sm whitespace-nowrap"
-            >
-              <span className="material-symbols-outlined">add</span>
-              새 로그 작성
-            </button>
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h2 className="text-sm text-slate-500 font-medium mb-3">나의 비전 선언</h2>
+            <p className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-primary)] to-blue-600 tracking-tight leading-relaxed" style={{ fontFamily: 'Pretendard, sans-serif' }}>
+              &quot;{userVision || "비전 선언문이 없습니다. 프로필에서 작성해보세요."}&quot;
+            </p>
           </div>
 
           {/* Calendar & Stats Grid */}

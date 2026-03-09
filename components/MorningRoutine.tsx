@@ -18,6 +18,7 @@ export default function MorningRoutine({ date }: { date: string }) {
       <textarea
         className="w-full ruled-lines min-h-[80px] text-sm text-slate-600 resize-none bg-transparent border-none focus:ring-0 p-0 outline-none"
         placeholder="오늘 아침의 첫 단추를 채우세요..."
+        maxLength={200}
         value={diary?.morningRoutine ?? ''}
         onChange={(e) => setField(date, 'morningRoutine', e.target.value)}
       />

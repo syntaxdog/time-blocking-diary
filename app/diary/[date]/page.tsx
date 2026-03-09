@@ -88,7 +88,7 @@ export default function DiaryPage({ params }: { params: Promise<{ date: string }
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
           {/* Left Column: Mindset & Reflection */}
-          <div className="lg:col-span-3 space-y-6 order-2 lg:order-1">
+          <div className="lg:col-span-3 space-y-6 order-2 lg:order-1 min-w-0">
             <FutureViz date={date} />
             <Identity date={date} />
             <Motivation date={date} />
@@ -96,7 +96,7 @@ export default function DiaryPage({ params }: { params: Promise<{ date: string }
           </div>
 
           {/* Middle Column: Execution & Priorities */}
-          <div className="lg:col-span-5 space-y-6 order-3 lg:order-2">
+          <div className="lg:col-span-5 space-y-6 order-3 lg:order-2 min-w-0">
             {/* Morning Routine */}
             <MorningRoutine date={date} />
 
@@ -106,7 +106,7 @@ export default function DiaryPage({ params }: { params: Promise<{ date: string }
           </div>
 
           {/* Right Column: Time Box */}
-          <div className="lg:col-span-4 order-1 lg:order-3">
+          <div className="lg:col-span-4 order-1 lg:order-3 min-w-0">
             <TimeBox date={date} />
           </div>
         </div>

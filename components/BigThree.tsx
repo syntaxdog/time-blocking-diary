@@ -21,7 +21,7 @@ export default function BigThree({ date }: { date: string }) {
             </div>
             <input
               className="flex-1 bg-transparent border-b border-slate-100 focus:border-[var(--color-primary)] focus:ring-0 text-sm py-2 outline-none transition-colors"
-              placeholder={idx === 0 ? '가장 중요한 업무를 입력하세요' : idx === 1 ? '두 번째 우선순위' : '세 번째 우선순위'}
+              placeholder={idx === 0 ? '첫 번째 우선순위' : idx === 1 ? '두 번째 우선순위' : '세 번째 우선순위'}
               value={bigThree[idx]}
               onChange={(e) => setBigThree(date, idx, e.target.value)}
             />

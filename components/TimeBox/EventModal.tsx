@@ -15,25 +15,23 @@ const COLORS: { value: BlockColor; label: string; bg: string }[] = [
 type Props = {
   startSlot: number;
   endSlot: number;
-  column: 0 | 1;
   onConfirm: (label: string, color: BlockColor) => void;
   onCancel: () => void;
-  // 수정 모드용
   existing?: Pick<TimeBlock, 'label' | 'color'>;
   onDelete?: () => void;
 };
 
-export default function EventModal({ startSlot, endSlot, column, onConfirm, onCancel, existing, onDelete }: Props) {
+export default function EventModal({ startSlot, endSlot, onConfirm, onCancel, existing, onDelete }: Props) {
   const [label, setLabel] = useState(existing?.label ?? '');
   const [color, setColor] = useState<BlockColor>(existing?.color ?? 'red');
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
-      onClick={onCancel}>
+      onMouseDown={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
       <div
         className="w-80 rounded-2xl p-5 flex flex-col gap-4 shadow-xl"
         style={{ background: 'var(--color-surface)' }}
-        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-sm" style={{ color: 'var(--color-primary)' }}>
@@ -47,7 +45,7 @@ export default function EventModal({ startSlot, endSlot, column, onConfirm, onCa
         {/* 일정명 */}
         <input
           autoFocus
-          className="rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-red-200"
+          className="rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30"
           style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)' }}
           placeholder="일정명"
           value={label}
@@ -65,7 +63,7 @@ export default function EventModal({ startSlot, endSlot, column, onConfirm, onCa
               className="w-8 h-8 rounded-full border-2 transition-transform hover:scale-110"
               style={{
                 background: c.bg,
-                borderColor: color === c.value ? '#1C1C1E' : 'transparent',
+                borderColor: color === c.value ? 'var(--color-text)' : 'transparent',
                 transform: color === c.value ? 'scale(1.2)' : undefined,
               }}
             />
@@ -77,14 +75,15 @@ export default function EventModal({ startSlot, endSlot, column, onConfirm, onCa
           {existing && onDelete && (
             <button
               onClick={onDelete}
-              className="flex-1 rounded-xl py-2 text-sm font-semibold text-red-500 border border-red-200 hover:bg-red-50 transition-colors"
+              className="flex-1 rounded-xl py-2 text-sm font-semibold text-red-400 border transition-colors"
+            style={{ borderColor: 'var(--color-border)' }}
             >
               삭제
             </button>
           )}
           <button
             onClick={onCancel}
-            className="flex-1 rounded-xl py-2 text-sm border transition-colors hover:bg-gray-50"
+            className="flex-1 rounded-xl py-2 text-sm border transition-colors"
             style={{ borderColor: 'var(--color-border)', color: 'var(--color-muted)' }}
           >
             취소

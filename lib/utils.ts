@@ -1,13 +1,13 @@
-// 슬롯 번호 → 시간 문자열 (0 → "05:00", 1 → "05:30", ...)
+// 슬롯 번호 → 시간 문자열 (0 → "05:00", 1 → "05:30", ... 45 → "03:30")
 export function slotToTime(slot: number): string {
-  const totalMinutes = 5 * 60 + slot * 30;
+  const totalMinutes = (5 * 60 + slot * 30) % (24 * 60);
   const h = Math.floor(totalMinutes / 60);
   const m = totalMinutes % 60;
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
-// 총 슬롯 수: 05:00 ~ 23:30 → 37슬롯
-export const TOTAL_SLOTS = 37;
+// 총 슬롯 수: 05:00 ~ 03:30 → 46슬롯 (05:00~04:00)
+export const TOTAL_SLOTS = 46;
 
 // 날짜 포맷 YYYY-MM-DD
 export function formatDate(date: Date): string {
