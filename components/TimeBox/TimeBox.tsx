@@ -25,6 +25,15 @@ function useIsDark() {
 
 const BLOCK_HEIGHT = 28; // px per slot
 
+function formatDuration(slots: number): string {
+  const totalMin = slots * 30;
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h === 0) return `${m}분`;
+  if (m === 0) return `${h}시간`;
+  return `${h}시간 ${m}분`;
+}
+
 type ModalState =
   | { mode: 'create'; startSlot: number; endSlot: number }
   | { mode: 'edit'; block: TimeBlock };
@@ -33,6 +42,9 @@ export default function TimeBox({ date }: { date: string }) {
   const isDark = useIsDark();
   const { diaries, addTimeBlock, updateTimeBlock, removeTimeBlock } = useDiaryStore();
   const timeBlocks = diaries[date]?.timeBlocks ?? [];
+  const big3Suggestions = (diaries[date]?.bigThree ?? [])
+    .map((b) => b.text.trim())
+    .filter(Boolean);
 
   const [dragStart, setDragStart] = useState<number | null>(null);
   const [dragEnd, setDragEnd] = useState<number | null>(null);
@@ -158,16 +170,33 @@ export default function TimeBox({ date }: { date: string }) {
           ))}
 
           {/* 드래그 하이라이트 */}
-          {highlightStart !== null && highlightEnd !== null && (
-            <div
-              className="absolute pointer-events-none rounded-sm opacity-30 left-0 w-full"
-              style={{
-                top: highlightStart * BLOCK_HEIGHT,
-                height: (highlightEnd - highlightStart + 1) * BLOCK_HEIGHT,
-                background: 'var(--color-primary)',
-              }}
-            />
-          )}
+          {highlightStart !== null && highlightEnd !== null && (() => {
+            const slots = highlightEnd - highlightStart + 1;
+            const top = highlightStart * BLOCK_HEIGHT;
+            const height = slots * BLOCK_HEIGHT;
+            const labelAbove = slots <= 2;
+            return (
+              <>
+                {/* 배경 오버레이 */}
+                <div
+                  className="absolute pointer-events-none rounded-sm left-0 w-full"
+                  style={{ top, height, background: 'color-mix(in srgb, var(--color-primary) 25%, transparent)' }}
+                />
+                {/* 시간 레이블 */}
+                <div
+                  className="absolute left-0 w-full flex flex-col items-center pointer-events-none select-none"
+                  style={{ top: labelAbove ? top - 28 : top, height: labelAbove ? 28 : height, justifyContent: 'center', display: 'flex', flexDirection: 'column' }}
+                >
+                  <span className="text-[var(--color-primary)] font-bold text-xs leading-tight">
+                    {slotToTime(highlightStart)} ~ {slotToTime(highlightEnd + 1)}
+                  </span>
+                  <span className="text-[var(--color-primary)] text-[10px] mt-0.5 opacity-70">
+                    {formatDuration(slots)}
+                  </span>
+                </div>
+              </>
+            );
+          })()}
 
           {/* 등록된 블록들 */}
           {timeBlocks.map((block) => (
@@ -191,6 +220,7 @@ export default function TimeBox({ date }: { date: string }) {
           onCancel={() => setModal(null)}
           existing={modal.mode === 'edit' ? { label: modal.block.label, color: modal.block.color } : undefined}
           onDelete={modal.mode === 'edit' ? handleDelete : undefined}
+          suggestions={modal.mode === 'create' ? big3Suggestions : undefined}
         />
       )}
     </section>
@@ -204,6 +234,8 @@ const accentColorMap = {
     green:  { bar: '#22c55e', bg: '#f0fdf4', text: '#166534' },
     yellow: { bar: '#eab308', bg: '#fefce8', text: '#854d0e' },
     purple: { bar: '#a855f7', bg: '#faf5ff', text: '#6b21a8' },
+    orange: { bar: '#f97316', bg: '#fff7ed', text: '#9a3412' },
+    gray:   { bar: '#6b7280', bg: '#f8fafc', text: '#374151' },
   },
   dark: {
     red:    { bar: '#f87171', bg: '#3b1a1e', text: '#fca5a5' },
@@ -211,6 +243,8 @@ const accentColorMap = {
     green:  { bar: '#4ade80', bg: '#143024', text: '#86efac' },
     yellow: { bar: '#facc15', bg: '#3b3014', text: '#fde68a' },
     purple: { bar: '#c084fc', bg: '#241638', text: '#d8b4fe' },
+    orange: { bar: '#fb923c', bg: '#3b1a0e', text: '#fdba74' },
+    gray:   { bar: '#9ca3af', bg: '#1e2330', text: '#d1d5db' },
   },
 } as const;
 

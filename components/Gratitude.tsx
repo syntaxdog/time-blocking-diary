@@ -19,7 +19,7 @@ export default function Gratitude({ date }: { date: string }) {
             <span className="text-[var(--color-primary)] font-bold text-sm shrink-0 w-5 text-right">{idx + 1}.</span>
             <input
               className="border-b border-[var(--color-primary)]/20 w-full pb-1 text-sm bg-transparent outline-none focus:border-[var(--color-primary)] transition-colors"
-              placeholder="감사한 것을 적어보세요..."
+              placeholder="감사한 것을 적어보세요."
               value={gratitude[idx] ?? ''}
               onChange={(e) => setGratitude(date, idx, e.target.value)}
             />

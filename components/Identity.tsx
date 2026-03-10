@@ -14,7 +14,7 @@ export default function Identity({ date }: { date: string }) {
       </div>
       <textarea
         className="w-full ruled-lines min-h-[100px] text-sm text-slate-600 resize-none bg-transparent border-none focus:ring-0 p-0 outline-none"
-        placeholder="나는 어떤 사람인가? 나의 정체성을 기록하세요..."
+        placeholder="나는 어떤 사람인가? 나의 정체성을 기록하세요."
         maxLength={200}
         value={diary?.identity ?? ''}
         onChange={(e) => setField(date, 'identity', e.target.value)}

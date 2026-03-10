@@ -2,13 +2,17 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { DiaryData, TimeBlock, BrainDumpItem } from '@/types/diary';
+import type { DiaryData, TimeBlock, BrainDumpItem, BigThreeItem } from '@/types/diary';
 import { today, uid } from '@/lib/utils';
 
 function emptyDiary(date: string): DiaryData {
   return {
     date,
-    bigThree: ['', '', ''],
+    bigThree: [
+      { text: '', checked: false },
+      { text: '', checked: false },
+      { text: '', checked: false },
+    ],
     brainDump: [],
     timeBlocks: [],
     feedback: { morning: '', midday: '', evening: '' },
@@ -39,7 +43,8 @@ type DiaryStore = {
   setTheme: (mode: ThemeMode) => void;
 
   // Big 3
-  setBigThree: (date: string, idx: 0 | 1 | 2, value: string) => void;
+  setBigThree: (date: string, idx: 0 | 1 | 2, text: string) => void;
+  toggleBigThree: (date: string, idx: 0 | 1 | 2) => void;
 
   // Brain Dump
   addBrainItem: (date: string) => void;
@@ -92,11 +97,19 @@ export const useDiaryStore = create<DiaryStore>()(
         set({ currentDate: date });
       },
 
-      setBigThree: (date, idx, value) =>
+      setBigThree: (date, idx, text) =>
         set((s) => {
           const diary = s.diaries[date] ?? emptyDiary(date);
-          const bigThree = [...diary.bigThree] as [string, string, string];
-          bigThree[idx] = value;
+          const bigThree = [...diary.bigThree] as [BigThreeItem, BigThreeItem, BigThreeItem];
+          bigThree[idx] = { ...bigThree[idx], text };
+          return { diaries: { ...s.diaries, [date]: { ...diary, bigThree } } };
+        }),
+
+      toggleBigThree: (date, idx) =>
+        set((s) => {
+          const diary = s.diaries[date] ?? emptyDiary(date);
+          const bigThree = [...diary.bigThree] as [BigThreeItem, BigThreeItem, BigThreeItem];
+          bigThree[idx] = { ...bigThree[idx], checked: !bigThree[idx].checked };
           return { diaries: { ...s.diaries, [date]: { ...diary, bigThree } } };
         }),
 
@@ -223,6 +236,22 @@ export const useDiaryStore = create<DiaryStore>()(
           return { diaries: { ...s.diaries, [date]: { ...diary, gratitude } } };
         }),
     }),
-    { name: 'time-blocking-diary' }
+    {
+      name: 'time-blocking-diary',
+      onRehydrateStorage: () => (state) => {
+        if (!state) return;
+        // Migrate bigThree from string[] to BigThreeItem[]
+        const migrated: Record<string, DiaryData> = {};
+        for (const [date, diary] of Object.entries(state.diaries)) {
+          const bigThree = diary.bigThree.map((item) =>
+            typeof item === 'string'
+              ? { text: item as unknown as string, checked: false }
+              : item
+          ) as [BigThreeItem, BigThreeItem, BigThreeItem];
+          migrated[date] = { ...diary, bigThree };
+        }
+        state.diaries = migrated;
+      },
+    }
   )
 );

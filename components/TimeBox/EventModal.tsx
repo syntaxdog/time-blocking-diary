@@ -4,12 +4,14 @@ import { useState } from 'react';
 import type { BlockColor, TimeBlock } from '@/types/diary';
 import { slotToTime } from '@/lib/utils';
 
-const COLORS: { value: BlockColor; label: string; bg: string }[] = [
-  { value: 'red', label: '빨강', bg: '#FCA5A5' },
-  { value: 'blue', label: '파랑', bg: '#93C5FD' },
-  { value: 'green', label: '초록', bg: '#86EFAC' },
-  { value: 'yellow', label: '노랑', bg: '#FDE68A' },
-  { value: 'purple', label: '보라', bg: '#C4B5FD' },
+const COLORS: { value: BlockColor; label: string; bg: string; dot: string }[] = [
+  { value: 'blue',   label: '업무',      bg: '#eff6ff', dot: '#3b82f6' },
+  { value: 'purple', label: '학습/공부', bg: '#faf5ff', dot: '#a855f7' },
+  { value: 'green',  label: '운동/건강', bg: '#f0fdf4', dot: '#22c55e' },
+  { value: 'orange', label: '관계/소통', bg: '#fff7ed', dot: '#f97316' },
+  { value: 'yellow', label: '휴식/여가', bg: '#fefce8', dot: '#eab308' },
+  { value: 'red',    label: '생활관리', bg: '#fef2f2', dot: '#ef4444' },
+  { value: 'gray',   label: '기타',      bg: '#f8fafc', dot: '#6b7280' },
 ];
 
 type Props = {
@@ -19,11 +21,12 @@ type Props = {
   onCancel: () => void;
   existing?: Pick<TimeBlock, 'label' | 'color'>;
   onDelete?: () => void;
+  suggestions?: string[];
 };
 
-export default function EventModal({ startSlot, endSlot, onConfirm, onCancel, existing, onDelete }: Props) {
+export default function EventModal({ startSlot, endSlot, onConfirm, onCancel, existing, onDelete, suggestions }: Props) {
   const [label, setLabel] = useState(existing?.label ?? '');
-  const [color, setColor] = useState<BlockColor>(existing?.color ?? 'red');
+  const [color, setColor] = useState<BlockColor>(existing?.color ?? 'blue');
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
@@ -53,20 +56,50 @@ export default function EventModal({ startSlot, endSlot, onConfirm, onCancel, ex
           onKeyDown={(e) => e.key === 'Enter' && label.trim() && onConfirm(label.trim(), color)}
         />
 
-        {/* 색상 선택 */}
-        <div className="flex gap-2 justify-center">
+        {/* BIG3 빠른 선택 */}
+        {suggestions && suggestions.length > 0 && (
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--color-muted)' }}>
+              Big 3에서 선택
+            </span>
+            <div className="flex flex-col gap-1">
+              {suggestions.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setLabel(s)}
+                  className="text-left text-xs px-3 py-1.5 rounded-lg border transition-colors truncate"
+                  style={{
+                    borderColor: label === s ? 'var(--color-primary)' : 'var(--color-border)',
+                    background: label === s ? 'color-mix(in srgb, var(--color-primary) 10%, transparent)' : 'var(--color-bg)',
+                    color: label === s ? 'var(--color-primary)' : undefined,
+                    fontWeight: label === s ? 600 : 400,
+                  }}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 카테고리 선택 */}
+        <div className="grid grid-cols-2 gap-1.5">
           {COLORS.map((c) => (
             <button
               key={c.value}
-              title={c.label}
+              type="button"
               onClick={() => setColor(c.value)}
-              className="w-8 h-8 rounded-full border-2 transition-transform hover:scale-110"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-colors text-left"
               style={{
-                background: c.bg,
-                borderColor: color === c.value ? 'var(--color-text)' : 'transparent',
-                transform: color === c.value ? 'scale(1.2)' : undefined,
+                borderColor: color === c.value ? c.dot : 'var(--color-border)',
+                background: color === c.value ? c.bg : 'var(--color-bg)',
+                color: color === c.value ? c.dot : 'var(--color-muted)',
               }}
-            />
+            >
+              <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: c.dot }} />
+              {c.label}
+            </button>
           ))}
         </div>
 
@@ -76,7 +109,7 @@ export default function EventModal({ startSlot, endSlot, onConfirm, onCancel, ex
             <button
               onClick={onDelete}
               className="flex-1 rounded-xl py-2 text-sm font-semibold text-red-400 border transition-colors"
-            style={{ borderColor: 'var(--color-border)' }}
+              style={{ borderColor: 'var(--color-border)' }}
             >
               삭제
             </button>

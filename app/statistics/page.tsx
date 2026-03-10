@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useDiaryStore } from '@/store/diaryStore';
-import { slotToTime } from '@/lib/utils';
+
 import Sidebar from '@/components/Sidebar';
 
 export default function StatisticsPage() {
@@ -24,7 +24,7 @@ export default function StatisticsPage() {
       const day = String(d.getDate()).padStart(2, '0');
       return `${y}-${m}-${day}`;
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [monday.toISOString().slice(0, 10)]);
 
   // Weekly Big 3 data from store
@@ -33,7 +33,7 @@ export default function StatisticsPage() {
     return weekDates.map((dateStr, i) => {
       const diary = diaries[dateStr];
       if (!diary) return { day: dayLabels[i], value: 0 };
-      const filledCount = diary.bigThree.filter((b) => b.trim() !== '').length;
+      const filledCount = diary.bigThree.filter((b) => b.checked).length;
       const pct = Math.round((filledCount / 3) * 100);
       return { day: dayLabels[i], value: pct };
     });
@@ -80,11 +80,13 @@ export default function StatisticsPage() {
   // Time distribution from color categories
   const timeDistribution = useMemo(() => {
     const colorMap: Record<string, { label: string; count: number; cssColor: string }> = {
-      blue: { label: '업무/공부', count: 0, cssColor: 'bg-blue-500' },
-      green: { label: '운동/건강', count: 0, cssColor: 'bg-green-500' },
-      purple: { label: '창작/취미', count: 0, cssColor: 'bg-purple-500' },
-      yellow: { label: '휴식', count: 0, cssColor: 'bg-yellow-400' },
-      red: { label: '기타', count: 0, cssColor: 'bg-red-400' },
+      blue:   { label: '업무',      count: 0, cssColor: 'bg-blue-500'   },
+      purple: { label: '학습/공부', count: 0, cssColor: 'bg-purple-500' },
+      green:  { label: '운동/건강', count: 0, cssColor: 'bg-green-500'  },
+      orange: { label: '관계/소통', count: 0, cssColor: 'bg-orange-500' },
+      yellow: { label: '휴식/여가', count: 0, cssColor: 'bg-yellow-400' },
+      red:    { label: '생활관리', count: 0, cssColor: 'bg-red-400'    },
+      gray:   { label: '기타',      count: 0, cssColor: 'bg-gray-400'   },
     };
 
     Object.values(diaries).forEach((diary) => {
@@ -110,18 +112,20 @@ export default function StatisticsPage() {
   const displayTimeDistribution = timeDistribution.some((t) => t.pct > 0)
     ? timeDistribution
     : [
-        { label: '업무/공부', pct: 0, color: 'bg-blue-500' },
-        { label: '운동/건강', pct: 0, color: 'bg-green-500' },
-        { label: '창작/취미', pct: 0, color: 'bg-purple-500' },
-        { label: '휴식', pct: 0, color: 'bg-yellow-400' },
-        { label: '기타', pct: 0, color: 'bg-red-400' },
-      ];
+      { label: '업무',      pct: 0, color: 'bg-blue-500'   },
+      { label: '학습/공부', pct: 0, color: 'bg-purple-500' },
+      { label: '운동/건강', pct: 0, color: 'bg-green-500'  },
+      { label: '관계/소통', pct: 0, color: 'bg-orange-500' },
+      { label: '휴식/여가', pct: 0, color: 'bg-yellow-400' },
+      { label: '생활관리', pct: 0, color: 'bg-red-400'    },
+      { label: '기타',      pct: 0, color: 'bg-gray-400'   },
+    ];
 
   // Goal achievement rate (Big 3 filled across all entries)
   const goalRate = useMemo(() => {
     const entries = Object.values(diaries);
     if (entries.length === 0) return 0;
-    const totalFilled = entries.reduce((sum, d) => sum + d.bigThree.filter((b) => b.trim()).length, 0);
+    const totalFilled = entries.reduce((sum, d) => sum + d.bigThree.filter((b) => b.checked).length, 0);
     const totalPossible = entries.length * 3;
     return Math.round((totalFilled / totalPossible) * 100);
   }, [diaries]);
@@ -237,17 +241,25 @@ export default function StatisticsPage() {
                 &apos;Big 3&apos; 주간 목표 달성률
               </h3>
               <p className="text-sm text-slate-500 mb-6">매일 가장 중요한 3가지 과업의 완료 추이</p>
-              <div className="flex items-end justify-between gap-2 h-48">
+              <div className="relative flex items-end justify-between gap-2" style={{ height: '220px' }}>
+                {/* baseline */}
+                <div className="absolute bottom-6 left-0 right-0 border-t border-dashed border-slate-200" />
                 {weeklyBig3.map((item) => (
-                  <div key={item.day} className="flex-1 flex flex-col items-center gap-2">
-                    <span className="text-xs font-bold text-slate-900">{item.value}%</span>
-                    <div className="w-full bg-slate-100 rounded-t-lg overflow-hidden relative" style={{ height: '160px' }}>
+                  <div key={item.day} className="flex-1 flex flex-col items-center gap-1 h-full">
+                    <div className="flex-1 w-full flex items-end pb-6">
                       <div
-                        className="absolute bottom-0 w-full bg-gradient-to-t from-[var(--color-primary)] to-blue-400 rounded-t-lg transition-all duration-700"
-                        style={{ height: `${item.value}%` }}
+                        className="w-full bg-gradient-to-t from-[var(--color-primary)] to-blue-400 rounded-t-lg transition-all duration-700"
+                        style={{ height: `${item.value}%`, minHeight: item.value > 0 ? '6px' : '0' }}
                       />
                     </div>
-                    <span className="text-xs font-medium text-slate-500">{item.day}</span>
+                    <span className="text-xs font-medium text-slate-500 shrink-0">{item.day}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between gap-2 mt-2">
+                {weeklyBig3.map((item) => (
+                  <div key={item.day} className="flex-1 text-center">
+                    <span className="text-xs font-bold text-slate-700">{item.value > 0 ? `${item.value}%` : ''}</span>
                   </div>
                 ))}
               </div>
@@ -295,11 +307,10 @@ export default function StatisticsPage() {
                 {streakDays.map((active, i) => (
                   <div
                     key={i}
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-colors ${
-                      active
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-colors ${active
                         ? 'bg-[var(--color-primary)] text-white shadow-sm'
                         : 'bg-slate-100 text-slate-400'
-                    }`}
+                      }`}
                   >
                     {i + 1}
                   </div>

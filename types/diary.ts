@@ -7,10 +7,15 @@ export type TimeBlock = {
   column: 0 | 1;
 };
 
-export type BlockColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple';
+export type BlockColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'orange' | 'gray';
 
 export type BrainDumpItem = {
   id: string;
+  text: string;
+  checked: boolean;
+};
+
+export type BigThreeItem = {
   text: string;
   checked: boolean;
 };
@@ -23,7 +28,7 @@ export type FeedbackType = {
 
 export type DiaryData = {
   date: string; // 'YYYY-MM-DD'
-  bigThree: [string, string, string];
+  bigThree: [BigThreeItem, BigThreeItem, BigThreeItem];
   brainDump: BrainDumpItem[];
   timeBlocks: TimeBlock[];
   feedback: FeedbackType;

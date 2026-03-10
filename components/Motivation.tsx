@@ -14,7 +14,7 @@ export default function Motivation({ date }: { date: string }) {
       </div>
       <textarea
         className="w-full ruled-lines min-h-[100px] text-sm text-slate-600 resize-none bg-transparent border-none focus:ring-0 p-0 outline-none"
-        placeholder="오늘의 내적 동기를 기록하세요..."
+        placeholder="오늘의 내적 동기를 기록하세요."
         maxLength={200}
         value={diary?.motivation ?? ''}
         onChange={(e) => setField(date, 'motivation', e.target.value)}
