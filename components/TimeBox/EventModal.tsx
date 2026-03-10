@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { BlockColor, TimeBlock } from '@/types/diary';
 import { slotToTime } from '@/lib/utils';
 
@@ -28,10 +28,19 @@ export default function EventModal({ startSlot, endSlot, onConfirm, onCancel, ex
   const [label, setLabel] = useState(existing?.label ?? '');
   const [color, setColor] = useState<BlockColor>(existing?.color ?? 'blue');
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onCancel]);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
       onMouseDown={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={existing ? '일정 수정' : '일정 등록'}
         className="w-80 rounded-2xl p-5 flex flex-col gap-4 shadow-xl"
         style={{ background: 'var(--color-surface)' }}
         onMouseDown={(e) => e.stopPropagation()}

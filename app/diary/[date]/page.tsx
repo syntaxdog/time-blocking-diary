@@ -2,8 +2,7 @@
 
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { useDiaryStore } from '@/store/diaryStore';
-import { displayDate, addDays } from '@/lib/utils';
+import { addDays } from '@/lib/utils';
 
 import TimeBox from '@/components/TimeBox/TimeBox';
 import BigThree from '@/components/BigThree';
@@ -18,9 +17,6 @@ import MorningRoutine from '@/components/MorningRoutine';
 export default function DiaryPage({ params }: { params: Promise<{ date: string }> }) {
   const { date } = use(params);
   const router = useRouter();
-  const { getOrCreate } = useDiaryStore();
-  getOrCreate(date);
-
   // Parse date for display
   const dateObj = new Date(date + 'T00:00:00');
   const dayNames = ['일', '월', '화', '수', '목', '금', '토'];

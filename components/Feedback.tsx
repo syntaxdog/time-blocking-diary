@@ -5,7 +5,7 @@ import { useDiaryStore } from '@/store/diaryStore';
 export default function Feedback({ date }: { date: string }) {
   const { diaries, setFeedback } = useDiaryStore();
   const diary = diaries[date];
-  const feedback = diary?.feedback ?? { morning: '', afternoon: '', evening: '' };
+  const feedback = diary?.feedback ?? { morning: '', midday: '', evening: '' };
 
   return (
     <section className="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
@@ -16,7 +16,7 @@ export default function Feedback({ date }: { date: string }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {([
           { key: 'morning' as const, label: 'Morning', placeholder: '계획대로 시작했나요?' },
-          { key: 'afternoon' as const, label: 'Afternoon', placeholder: '집중도는 어땠나요?' },
+          { key: 'midday' as const, label: 'Afternoon', placeholder: '집중도는 어땠나요?' },
           { key: 'evening' as const, label: 'Evening', placeholder: '내일의 준비는?' },
         ]).map((item) => (
           <div key={item.key} className="p-3 bg-slate-50 rounded-lg">
