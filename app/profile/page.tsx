@@ -63,7 +63,7 @@ export default function ProfilePage() {
             <aside className="w-full md:w-1/3 flex flex-col gap-6">
               {/* Profile Card */}
               <div className="bg-white p-6 rounded-xl border border-slate-200 flex flex-col items-center text-center shadow-sm">
-                <div className="relative group">
+                <div className="relative group cursor-pointer" onClick={() => { if (editing) document.getElementById('image-url-input')?.focus(); }}>
                   {(editing ? editImage : userImage) ? (
                     <img
                       src={editing ? editImage : userImage!}
@@ -76,15 +76,9 @@ export default function ProfilePage() {
                     </div>
                   )}
                   {editing && (
-                    <button
-                      onClick={() => {
-                        const url = prompt('프로필 이미지 URL을 입력하세요:', editImage);
-                        if (url !== null) setEditImage(url);
-                      }}
-                      className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                    >
+                    <div className="absolute inset-0 rounded-full bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <span className="material-symbols-outlined text-white text-3xl">photo_camera</span>
-                    </button>
+                    </div>
                   )}
                 </div>
                 {editing ? (
@@ -96,6 +90,17 @@ export default function ProfilePage() {
                       className="mt-4 w-full text-center text-xl font-bold border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]"
                       autoFocus
                     />
+                    <div className="mt-2 w-full flex items-center gap-2">
+                      <span className="material-symbols-outlined text-slate-400 text-lg shrink-0">link</span>
+                      <input
+                        id="image-url-input"
+                        type="url"
+                        value={editImage}
+                        onChange={(e) => setEditImage(e.target.value)}
+                        placeholder="이미지 URL 입력"
+                        className="w-full text-xs border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] text-slate-600"
+                      />
+                    </div>
                     <div className="mt-4 flex gap-2 w-full">
                       <button
                         onClick={() => { setEditing(false); setEditName(userName); setEditImage(userImage || ''); }}
