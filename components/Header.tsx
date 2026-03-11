@@ -31,7 +31,13 @@ export default function Header() {
             <rect x="13" y="16" width="7" height="4" rx="1.5" opacity="0.75" />
           </svg>
         </div>
-        <h1 className="text-xl font-bold tracking-tight">Time Blocking Diary</h1>
+        <h1 className="text-xl tracking-tight">
+          <span className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-primary)] to-indigo-500">Time</span>
+          <span className="font-light text-slate-400 mx-0.5">|</span>
+          <span className="font-bold text-slate-800">Blocking</span>
+          <span className="font-light text-slate-400 mx-0.5">|</span>
+          <span className="font-medium italic text-slate-500">Diary</span>
+        </h1>
       </div>
       <div className="flex items-center gap-3">
         <button

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useDiaryStore } from '@/store/diaryStore';
 import Sidebar from '@/components/Sidebar';
@@ -19,6 +19,31 @@ export default function ProfilePage() {
   const [editName, setEditName] = useState(userName);
   const [editImage, setEditImage] = useState(userImage || '');
   const [saving, setSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const size = 200;
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d')!;
+        const min = Math.min(img.width, img.height);
+        const sx = (img.width - min) / 2;
+        const sy = (img.height - min) / 2;
+        ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+        setEditImage(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      img.src = ev.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -63,7 +88,7 @@ export default function ProfilePage() {
             <aside className="w-full md:w-1/3 flex flex-col gap-6">
               {/* Profile Card */}
               <div className="bg-white p-6 rounded-xl border border-slate-200 flex flex-col items-center text-center shadow-sm">
-                <div className="relative group cursor-pointer" onClick={() => { if (editing) document.getElementById('image-url-input')?.focus(); }}>
+                <div className="relative group cursor-pointer" onClick={() => { if (editing) fileInputRef.current?.click(); }}>
                   {(editing ? editImage : userImage) ? (
                     <img
                       src={editing ? editImage : userImage!}
@@ -80,6 +105,13 @@ export default function ProfilePage() {
                       <span className="material-symbols-outlined text-white text-3xl">photo_camera</span>
                     </div>
                   )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
                 </div>
                 {editing ? (
                   <>
@@ -90,17 +122,6 @@ export default function ProfilePage() {
                       className="mt-4 w-full text-center text-xl font-bold border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]"
                       autoFocus
                     />
-                    <div className="mt-2 w-full flex items-center gap-2">
-                      <span className="material-symbols-outlined text-slate-400 text-lg shrink-0">link</span>
-                      <input
-                        id="image-url-input"
-                        type="url"
-                        value={editImage}
-                        onChange={(e) => setEditImage(e.target.value)}
-                        placeholder="이미지 URL 입력"
-                        className="w-full text-xs border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] text-slate-600"
-                      />
-                    </div>
                     <div className="mt-4 flex gap-2 w-full">
                       <button
                         onClick={() => { setEditing(false); setEditName(userName); setEditImage(userImage || ''); }}
