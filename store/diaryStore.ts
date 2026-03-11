@@ -28,6 +28,9 @@ function emptyDiary(date: string): DiaryData {
 type ThemeMode = 'light' | 'dark' | 'system';
 
 type DiaryStore = {
+  // hydration 상태
+  _hasHydrated: boolean;
+
   // 날짜별 다이어리 맵
   diaries: Record<string, DiaryData>;
   currentDate: string;
@@ -74,6 +77,7 @@ type DiaryStore = {
 export const useDiaryStore = create<DiaryStore>()(
   persist(
     (set, get) => ({
+      _hasHydrated: false,
       diaries: {},
       currentDate: today(),
       theme: 'light' as ThemeMode,
@@ -243,8 +247,14 @@ export const useDiaryStore = create<DiaryStore>()(
     }),
     {
       name: 'time-blocking-diary',
+      partialize: (state) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { _hasHydrated, ...rest } = state;
+        return rest;
+      },
       onRehydrateStorage: () => (state) => {
         if (!state) return;
+        state._hasHydrated = true;
         // Migrate bigThree from string[] to BigThreeItem[]
         const migrated: Record<string, DiaryData> = {};
         for (const [date, diary] of Object.entries(state.diaries)) {

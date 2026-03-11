@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import ThemeProvider from '@/components/ThemeProvider';
+import HydrationGate from '@/components/HydrationGate';
 import { SessionProvider } from 'next-auth/react';
 import { auth } from '@/auth';
 
@@ -30,7 +31,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className="min-h-screen antialiased">
         <SessionProvider session={session}>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            <HydrationGate>{children}</HydrationGate>
+          </ThemeProvider>
         </SessionProvider>
       </body>
     </html>
