@@ -32,11 +32,10 @@ export default function BigThree({ date }: { date: string }) {
                 </span>
               </button>
               <input
-                className={`flex-1 bg-transparent border-b focus:ring-0 text-sm py-2 outline-none transition-colors ${
-                  item.checked
+                className={`flex-1 bg-transparent border-b focus:ring-0 text-sm py-2 outline-none transition-colors ${item.checked
                     ? 'line-through text-slate-400 border-slate-100'
                     : 'text-slate-700 border-slate-100 focus:border-[var(--color-primary)]'
-                }`}
+                  }`}
                 placeholder={idx === 0 ? '첫 번째 우선순위' : idx === 1 ? '두 번째 우선순위' : '세 번째 우선순위'}
                 value={item.text}
                 onChange={(e) => setBigThree(date, idx, e.target.value)}

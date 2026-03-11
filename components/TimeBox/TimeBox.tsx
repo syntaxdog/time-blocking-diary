@@ -154,59 +154,59 @@ export default function TimeBox({ date }: { date: string }) {
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
           >
-          {/* 슬롯 배경선 */}
-          {Array.from({ length: TOTAL_SLOTS }).map((_, i) => (
-            <div key={i} className="absolute w-full"
-              style={{
-                top: i * BLOCK_HEIGHT,
-                height: BLOCK_HEIGHT,
-                borderTop: i % 2 === 0
-                  ? `1px solid ${isDark ? '#334155' : '#e2e8f0'}`
-                  : `1px dashed ${isDark ? '#1e293b' : '#f1f5f9'}`,
-                background: i % 2 === 0
-                  ? (isDark ? '#1a2332' : '#f8fafc')
-                  : 'var(--color-surface)',
-              }} />
-          ))}
+            {/* 슬롯 배경선 */}
+            {Array.from({ length: TOTAL_SLOTS }).map((_, i) => (
+              <div key={i} className="absolute w-full"
+                style={{
+                  top: i * BLOCK_HEIGHT,
+                  height: BLOCK_HEIGHT,
+                  borderTop: i % 2 === 0
+                    ? `1px solid ${isDark ? '#334155' : '#e2e8f0'}`
+                    : `1px dashed ${isDark ? '#1e293b' : '#f1f5f9'}`,
+                  background: i % 2 === 0
+                    ? (isDark ? '#1a2332' : '#f8fafc')
+                    : 'var(--color-surface)',
+                }} />
+            ))}
 
-          {/* 드래그 하이라이트 */}
-          {highlightStart !== null && highlightEnd !== null && (() => {
-            const slots = highlightEnd - highlightStart + 1;
-            const top = highlightStart * BLOCK_HEIGHT;
-            const height = slots * BLOCK_HEIGHT;
-            const labelAbove = slots <= 2;
-            return (
-              <>
-                {/* 배경 오버레이 */}
-                <div
-                  className="absolute pointer-events-none rounded-sm left-0 w-full"
-                  style={{ top, height, background: 'color-mix(in srgb, var(--color-primary) 25%, transparent)' }}
-                />
-                {/* 시간 레이블 */}
-                <div
-                  className="absolute left-0 w-full flex flex-col items-center pointer-events-none select-none"
-                  style={{ top: labelAbove ? top - 28 : top, height: labelAbove ? 28 : height, justifyContent: 'center', display: 'flex', flexDirection: 'column' }}
-                >
-                  <span className="text-[var(--color-primary)] font-bold text-xs leading-tight">
-                    {slotToTime(highlightStart)} ~ {slotToTime(highlightEnd + 1)}
-                  </span>
-                  <span className="text-[var(--color-primary)] text-[10px] mt-0.5 opacity-70">
-                    {formatDuration(slots)}
-                  </span>
-                </div>
-              </>
-            );
-          })()}
+            {/* 드래그 하이라이트 */}
+            {highlightStart !== null && highlightEnd !== null && (() => {
+              const slots = highlightEnd - highlightStart + 1;
+              const top = highlightStart * BLOCK_HEIGHT;
+              const height = slots * BLOCK_HEIGHT;
+              const labelAbove = slots <= 2;
+              return (
+                <>
+                  {/* 배경 오버레이 */}
+                  <div
+                    className="absolute pointer-events-none rounded-sm left-0 w-full"
+                    style={{ top, height, background: 'color-mix(in srgb, var(--color-primary) 25%, transparent)' }}
+                  />
+                  {/* 시간 레이블 */}
+                  <div
+                    className="absolute left-0 w-full flex flex-col items-center pointer-events-none select-none"
+                    style={{ top: labelAbove ? top - 28 : top, height: labelAbove ? 28 : height, justifyContent: 'center', display: 'flex', flexDirection: 'column' }}
+                  >
+                    <span className="text-[var(--color-primary)] font-bold text-xs leading-tight">
+                      {slotToTime(highlightStart)} ~ {slotToTime(highlightEnd + 1)}
+                    </span>
+                    <span className="text-[var(--color-primary)] text-[10px] mt-0.5 opacity-70">
+                      {formatDuration(slots)}
+                    </span>
+                  </div>
+                </>
+              );
+            })()}
 
-          {/* 등록된 블록들 */}
-          {timeBlocks.map((block) => (
-            <BlockItem
-              key={block.id}
-              block={block}
-              blockHeight={BLOCK_HEIGHT}
-              onClick={() => setModal({ mode: 'edit', block })}
-            />
-          ))}
+            {/* 등록된 블록들 */}
+            {timeBlocks.map((block) => (
+              <BlockItem
+                key={block.id}
+                block={block}
+                blockHeight={BLOCK_HEIGHT}
+                onClick={() => setModal({ mode: 'edit', block })}
+              />
+            ))}
           </div>
         </div>
       </div>
@@ -229,22 +229,22 @@ export default function TimeBox({ date }: { date: string }) {
 
 const accentColorMap = {
   light: {
-    red:    { bar: '#ef4444', bg: '#fef2f2', text: '#991b1b' },
-    blue:   { bar: '#3b82f6', bg: '#eff6ff', text: '#1e40af' },
-    green:  { bar: '#22c55e', bg: '#f0fdf4', text: '#166534' },
+    red: { bar: '#ef4444', bg: '#fef2f2', text: '#991b1b' },
+    blue: { bar: '#3b82f6', bg: '#eff6ff', text: '#1e40af' },
+    green: { bar: '#22c55e', bg: '#f0fdf4', text: '#166534' },
     yellow: { bar: '#eab308', bg: '#fefce8', text: '#854d0e' },
     purple: { bar: '#a855f7', bg: '#faf5ff', text: '#6b21a8' },
     orange: { bar: '#f97316', bg: '#fff7ed', text: '#9a3412' },
-    gray:   { bar: '#6b7280', bg: '#f8fafc', text: '#374151' },
+    gray: { bar: '#6b7280', bg: '#f8fafc', text: '#374151' },
   },
   dark: {
-    red:    { bar: '#f87171', bg: '#3b1a1e', text: '#fca5a5' },
-    blue:   { bar: '#60a5fa', bg: '#142240', text: '#93c5fd' },
-    green:  { bar: '#4ade80', bg: '#143024', text: '#86efac' },
+    red: { bar: '#f87171', bg: '#3b1a1e', text: '#fca5a5' },
+    blue: { bar: '#60a5fa', bg: '#142240', text: '#93c5fd' },
+    green: { bar: '#4ade80', bg: '#143024', text: '#86efac' },
     yellow: { bar: '#facc15', bg: '#3b3014', text: '#fde68a' },
     purple: { bar: '#c084fc', bg: '#241638', text: '#d8b4fe' },
     orange: { bar: '#fb923c', bg: '#3b1a0e', text: '#fdba74' },
-    gray:   { bar: '#9ca3af', bg: '#1e2330', text: '#d1d5db' },
+    gray: { bar: '#9ca3af', bg: '#1e2330', text: '#d1d5db' },
   },
 } as const;
 

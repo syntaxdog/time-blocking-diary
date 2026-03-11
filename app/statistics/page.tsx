@@ -81,13 +81,13 @@ export default function StatisticsPage() {
   // Time distribution from color categories
   const timeDistribution = useMemo(() => {
     const colorMap: Record<string, { label: string; count: number; cssColor: string }> = {
-      blue:   { label: '업무',      count: 0, cssColor: 'bg-blue-500'   },
+      blue: { label: '업무', count: 0, cssColor: 'bg-blue-500' },
       purple: { label: '학습/공부', count: 0, cssColor: 'bg-purple-500' },
-      green:  { label: '운동/건강', count: 0, cssColor: 'bg-green-500'  },
+      green: { label: '운동/건강', count: 0, cssColor: 'bg-green-500' },
       orange: { label: '관계/소통', count: 0, cssColor: 'bg-orange-500' },
       yellow: { label: '휴식/여가', count: 0, cssColor: 'bg-yellow-400' },
-      red:    { label: '생활관리', count: 0, cssColor: 'bg-red-400'    },
-      gray:   { label: '기타',      count: 0, cssColor: 'bg-gray-400'   },
+      red: { label: '생활관리', count: 0, cssColor: 'bg-red-400' },
+      gray: { label: '기타', count: 0, cssColor: 'bg-gray-400' },
     };
 
     Object.values(diaries).forEach((diary) => {
@@ -113,13 +113,13 @@ export default function StatisticsPage() {
   const displayTimeDistribution = timeDistribution.some((t) => t.pct > 0)
     ? timeDistribution
     : [
-      { label: '업무',      pct: 0, color: 'bg-blue-500'   },
+      { label: '업무', pct: 0, color: 'bg-blue-500' },
       { label: '학습/공부', pct: 0, color: 'bg-purple-500' },
-      { label: '운동/건강', pct: 0, color: 'bg-green-500'  },
+      { label: '운동/건강', pct: 0, color: 'bg-green-500' },
       { label: '관계/소통', pct: 0, color: 'bg-orange-500' },
       { label: '휴식/여가', pct: 0, color: 'bg-yellow-400' },
-      { label: '생활관리', pct: 0, color: 'bg-red-400'    },
-      { label: '기타',      pct: 0, color: 'bg-gray-400'   },
+      { label: '생활관리', pct: 0, color: 'bg-red-400' },
+      { label: '기타', pct: 0, color: 'bg-gray-400' },
     ];
 
   // Goal achievement rate (Big 3 filled across all entries)
@@ -290,8 +290,8 @@ export default function StatisticsPage() {
                   <div
                     key={i}
                     className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-colors ${active
-                        ? 'bg-[var(--color-primary)] text-white shadow-sm'
-                        : 'bg-slate-100 text-slate-400'
+                      ? 'bg-[var(--color-primary)] text-white shadow-sm'
+                      : 'bg-slate-100 text-slate-400'
                       }`}
                   >
                     {i + 1}

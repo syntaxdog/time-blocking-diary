@@ -53,11 +53,10 @@ export default function Sidebar({ active }: SidebarProps) {
           <Link
             key={item.id}
             href={item.href}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-              active === item.id
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${active === item.id
                 ? 'bg-[var(--color-primary)]/10 text-[var(--color-primary)] font-medium'
                 : 'hover:bg-slate-100 text-slate-700'
-            }`}
+              }`}
           >
             <span className="material-symbols-outlined">{item.icon}</span>
             {item.label}

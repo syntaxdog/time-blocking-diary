@@ -6,24 +6,44 @@ import { useDiaryStore } from '@/store/diaryStore';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 
-type SettingsTab = 'info' | 'notifications' | 'theme' | 'security';
+type SettingsTab = 'info' | 'theme' | 'security';
 
 export default function ProfilePage() {
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
   const { theme, setTheme, userVision, setUserVision } = useDiaryStore();
   const userName = session?.user?.name || '사용자';
-  const userEmail = session?.user?.email || '';
   const userInitial = userName.charAt(0);
   const userImage = session?.user?.image;
-  const [dailyReminder, setDailyReminder] = useState(true);
-  const [autoBackup, setAutoBackup] = useState(false);
   const [activeTab, setActiveTab] = useState<SettingsTab>('info');
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState(userName);
+  const [editImage, setEditImage] = useState(userImage || '');
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editName,
+          ...(editImage !== userImage ? { image: editImage } : {}),
+        }),
+      });
+      if (res.ok) {
+        await updateSession();
+        setEditing(false);
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const tabItems: { id: SettingsTab; label: string; icon: string }[] = [
     { id: 'info', label: '회원 정보', icon: 'person' },
-    { id: 'notifications', label: '알림 설정', icon: 'notifications' },
     { id: 'theme', label: '화면 테마', icon: 'palette' },
     { id: 'security', label: '보안 및 개인정보', icon: 'security' },
   ];
@@ -43,16 +63,27 @@ export default function ProfilePage() {
               {/* Profile Card */}
               <div className="bg-white p-6 rounded-xl border border-slate-200 flex flex-col items-center text-center shadow-sm">
                 <div className="relative group">
-                  {userImage ? (
+                  {(editing ? editImage : userImage) ? (
                     <img
-                      src={userImage}
+                      src={editing ? editImage : userImage!}
                       alt="Profile"
                       className="aspect-square rounded-full h-32 w-32 border-4 border-[var(--color-primary)]/10 object-cover"
                     />
                   ) : (
                     <div className="aspect-square bg-gradient-to-br from-[var(--color-primary)] to-blue-400 rounded-full h-32 w-32 border-4 border-[var(--color-primary)]/10 flex items-center justify-center text-white text-5xl font-bold">
-                      {userInitial}
+                      {editing ? (editName.charAt(0) || userInitial) : userInitial}
                     </div>
+                  )}
+                  {editing && (
+                    <button
+                      onClick={() => {
+                        const url = prompt('프로필 이미지 URL을 입력하세요:', editImage);
+                        if (url !== null) setEditImage(url);
+                      }}
+                      className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-white text-3xl">photo_camera</span>
+                    </button>
                   )}
                 </div>
                 {editing ? (
@@ -64,26 +95,26 @@ export default function ProfilePage() {
                       className="mt-4 w-full text-center text-xl font-bold border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]"
                       autoFocus
                     />
-                    <p className="text-slate-500 text-sm mt-1">{userEmail}</p>
                     <div className="mt-4 flex gap-2 w-full">
                       <button
-                        onClick={() => { setEditing(false); setEditName(userName); }}
+                        onClick={() => { setEditing(false); setEditName(userName); setEditImage(userImage || ''); }}
                         className="flex-1 py-2 px-4 rounded-lg bg-slate-100 text-xs font-semibold hover:bg-slate-200 transition-colors"
+                        disabled={saving}
                       >
                         취소
                       </button>
                       <button
-                        onClick={() => setEditing(false)}
-                        className="flex-1 py-2 px-4 rounded-lg bg-[var(--color-primary)] text-white text-xs font-semibold hover:bg-[var(--color-primary)]/90 transition-colors"
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="flex-1 py-2 px-4 rounded-lg bg-[var(--color-primary)] text-white text-xs font-semibold hover:bg-[var(--color-primary)]/90 transition-colors disabled:opacity-50"
                       >
-                        저장
+                        {saving ? '저장 중...' : '저장'}
                       </button>
                     </div>
                   </>
                 ) : (
                   <>
                     <h1 className="mt-4 text-xl font-bold">{userName}</h1>
-                    <p className="text-slate-500 text-sm">{userEmail}</p>
                     <div className="mt-4 flex gap-2 w-full">
                       <button
                         onClick={() => signOut({ callbackUrl: '/login' })}
@@ -92,7 +123,7 @@ export default function ProfilePage() {
                         로그아웃
                       </button>
                       <button
-                        onClick={() => { setEditName(userName); setEditing(true); }}
+                        onClick={() => { setEditName(userName); setEditImage(userImage || ''); setEditing(true); }}
                         className="flex-1 py-2 px-4 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-xs font-semibold hover:bg-[var(--color-primary)]/20 transition-colors"
                       >
                         편집
@@ -145,44 +176,6 @@ export default function ProfilePage() {
                     </div>
                   </section>
                 </>
-              )}
-
-              {/* notifications 탭: 알림 설정 */}
-              {activeTab === 'notifications' && (
-                <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                  <div className="flex items-center gap-2 mb-6">
-                    <span className="material-symbols-outlined text-[var(--color-primary)]">notifications_active</span>
-                    <h3 className="text-lg font-bold">알림 및 다이어리 설정</h3>
-                  </div>
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">데일리 리마인더</p>
-                        <p className="text-xs text-slate-500">시간 블록 계획을 세우도록 알림을 보냅니다.</p>
-                      </div>
-                      <button
-                        onClick={() => setDailyReminder(!dailyReminder)}
-                        className="relative inline-flex items-center cursor-pointer"
-                      >
-                        <div className={`w-11 h-6 rounded-full transition-colors ${dailyReminder ? 'bg-[var(--color-primary)]' : 'bg-slate-300'}`} />
-                        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${dailyReminder ? 'left-6' : 'left-1'}`} />
-                      </button>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">자동 백업</p>
-                        <p className="text-xs text-slate-500">매일 밤 데이터를 클라우드에 안전하게 보관합니다.</p>
-                      </div>
-                      <button
-                        onClick={() => setAutoBackup(!autoBackup)}
-                        className="relative inline-flex items-center cursor-pointer"
-                      >
-                        <div className={`w-11 h-6 rounded-full transition-colors ${autoBackup ? 'bg-[var(--color-primary)]' : 'bg-slate-300'}`} />
-                        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${autoBackup ? 'left-6' : 'left-1'}`} />
-                      </button>
-                    </div>
-                  </div>
-                </section>
               )}
 
               {/* theme 탭: 화면 테마 */}

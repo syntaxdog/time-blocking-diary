@@ -92,7 +92,7 @@ export default function HomePage() {
         const tags = usedColors.map((c) => colorLabel[c]).filter(Boolean).slice(0, 2);
         return { dateStr, label, dotColor, summary, tags };
       });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [diaries]);
 
   return (
@@ -141,11 +141,10 @@ export default function HomePage() {
                     <button
                       key={day}
                       onClick={() => goToDiary(day)}
-                      className={`aspect-square flex items-center justify-center rounded-full text-sm font-medium transition-colors ${
-                        isToday
+                      className={`aspect-square flex items-center justify-center rounded-full text-sm font-medium transition-colors ${isToday
                           ? 'bg-[var(--color-primary)] text-white font-bold shadow-md'
                           : 'hover:bg-slate-100'
-                      }`}
+                        }`}
                     >
                       {day}
                     </button>
@@ -163,9 +162,9 @@ export default function HomePage() {
                   <p className="text-xs text-slate-400 mt-0.5">매일 3가지 목표 달성 현황</p>
                 </div>
                 {(() => {
-                  const recorded = weeklyBig3.filter((d) => d.hasData && !d.isFuture);
-                  const avg = recorded.length > 0
-                    ? Math.round(recorded.reduce((s, d) => s + d.value, 0) / recorded.length)
+                  const pastDays = weeklyBig3.filter((d) => !d.isFuture);
+                  const avg = pastDays.length > 0
+                    ? Math.round(pastDays.reduce((s, d) => s + d.value, 0) / pastDays.length)
                     : null;
                   return avg !== null ? (
                     <div className="flex flex-col items-end">
@@ -183,13 +182,11 @@ export default function HomePage() {
                     <span
                       className="text-xs font-bold leading-none mt-auto shrink-0"
                       style={{
-                        color: item.isFuture ? 'transparent'
-                          : item.hasData || item.isToday ? 'var(--big3-accent)'
-                          : 'transparent',
+                        color: item.isFuture ? 'transparent' : 'var(--big3-accent)',
                         minHeight: 16,
                       }}
                     >
-                      {item.isFuture ? '·' : item.hasData || item.isToday ? `${item.value}%` : '·'}
+                      {item.isFuture ? '·' : `${item.value}%`}
                     </span>
                     <div
                       className="w-full rounded-xl overflow-hidden relative flex-1"
@@ -204,9 +201,7 @@ export default function HomePage() {
                           className="absolute bottom-0 w-full rounded-xl transition-all duration-700"
                           style={{
                             height: `${item.value}%`,
-                            background: item.hasData || item.isToday
-                              ? 'var(--big3-bar-fill)'
-                              : 'transparent',
+                            background: 'var(--big3-bar-fill)',
                           }}
                         />
                       )}
@@ -214,9 +209,7 @@ export default function HomePage() {
                     <span
                       className="text-[11px] font-bold shrink-0"
                       style={{
-                        color: item.isFuture ? 'var(--big3-future-text)'
-                          : item.hasData || item.isToday ? 'var(--big3-accent)'
-                          : 'var(--big3-muted-text)',
+                        color: item.isFuture ? 'var(--big3-future-text)' : 'var(--big3-accent)',
                       }}
                     >
                       {item.day}

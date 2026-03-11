@@ -48,8 +48,13 @@ function LoginContent() {
     <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center p-4">
       <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 bg-[var(--color-primary)] rounded-xl flex items-center justify-center text-white mb-4">
-            <span className="material-symbols-outlined text-3xl">event_note</span>
+          <div className="w-14 h-14 bg-gradient-to-tr from-[var(--color-primary)] to-indigo-500 rounded-[16px] flex items-center justify-center text-white mb-4 shadow-lg ring-1 ring-black/5">
+            <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="5" width="18" height="16" rx="4" />
+              <path d="M16 3v4M8 3v4M3 11h18" />
+              <circle cx="12" cy="16" r="3" />
+              <path d="M12 14.5v1.5l1 1" />
+            </svg>
           </div>
           <h1 className="text-xl font-bold">Time Blocking Diary</h1>
           <p className="text-sm text-slate-500 mt-1">로그인하여 시작하세요</p>

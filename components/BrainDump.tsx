@@ -45,9 +45,8 @@ export default function BrainDump({ date }: { date: string }) {
               </div>
             </label>
             <input
-              className={`flex-1 bg-transparent text-sm outline-none transition-colors ${
-                item.checked ? 'line-through text-slate-400' : 'text-slate-600'
-              }`}
+              className={`flex-1 bg-transparent text-sm outline-none transition-colors ${item.checked ? 'line-through text-slate-400' : 'text-slate-600'
+                }`}
               value={item.text}
               onChange={(e) => updateBrainItem(date, item.id, e.target.value)}
               placeholder="할 일 입력"

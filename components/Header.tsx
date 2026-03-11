@@ -23,15 +23,17 @@ export default function Header() {
   return (
     <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-[var(--color-primary)] rounded-lg flex items-center justify-center text-white">
-          <span className="material-symbols-outlined text-xl">event_note</span>
+        <div className="w-8 h-8 bg-gradient-to-tr from-[var(--color-primary)] to-indigo-500 rounded-xl flex items-center justify-center text-white shadow-md shrink-0">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="5" width="18" height="16" rx="4" />
+            <path d="M16 3v4M8 3v4M3 11h18" />
+            <circle cx="12" cy="16" r="3" />
+            <path d="M12 14.5v1.5l1 1" />
+          </svg>
         </div>
         <h1 className="text-xl font-bold tracking-tight">Time Blocking Diary</h1>
       </div>
       <div className="flex items-center gap-3">
-        <button className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-600">
-          <span className="material-symbols-outlined">notifications</span>
-        </button>
         <button
           onClick={() => router.push('/profile')}
           className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-600"

@@ -25,9 +25,15 @@ export default {
     signIn: '/login',
   },
   callbacks: {
-    jwt({ token, user }) {
+    jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
+        token.name = user.name;
+        token.picture = user.image;
+      }
+      if (trigger === 'update') {
+        // Force refresh from DB on next session access
+        token.refreshProfile = true;
       }
       return token;
     },
@@ -35,6 +41,8 @@ export default {
       if (session.user && token.id) {
         session.user.id = token.id as string;
       }
+      if (token.name) session.user.name = token.name as string;
+      if (token.picture) session.user.image = token.picture as string;
       return session;
     },
   },
