@@ -59,7 +59,13 @@ function LoginContent() {
               </svg>
             </div>
           </div>
-          <h1 className="text-xl font-bold">Time Blocking Diary</h1>
+          <h1 className="text-2xl font-black tracking-tight flex items-baseline gap-2 mb-1">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-primary)] via-indigo-500 to-fuchsia-500">
+              Time
+            </span>
+            <span className="text-slate-800 tracking-tighter">Blocking</span>
+            <span className="font-medium text-slate-400 italic text-xl ml-0.5">Diary</span>
+          </h1>
           <p className="text-sm text-slate-500 mt-1">로그인하여 시작하세요</p>
         </div>
 
