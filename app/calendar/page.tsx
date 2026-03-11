@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useDiaryStore } from '@/store/diaryStore';
 import Sidebar from '@/components/Sidebar';
+import MobileNav from '@/components/MobileNav';
 import { slotToTime } from '@/lib/utils';
 
 export default function CalendarPage() {
@@ -186,7 +187,7 @@ export default function CalendarPage() {
         {/* Main Content Area */}
         <main className="flex-1 flex flex-col overflow-hidden">
           {/* Sub Header */}
-          <div className="h-14 border-b border-slate-200 bg-white flex items-center justify-between px-8 shrink-0">
+          <div className="h-14 border-b border-slate-200 bg-white flex items-center justify-between px-4 md:px-8 shrink-0">
             <div className="flex items-center gap-4">
               <h2 className="text-lg font-bold">{monthTitle}</h2>
               <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden">
@@ -204,7 +205,7 @@ export default function CalendarPage() {
               <div className="relative" ref={searchRef}>
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[20px]">search</span>
                 <input
-                  className="pl-10 pr-4 py-2 bg-slate-100 border-none rounded-lg text-sm w-64 focus:ring-2 focus:ring-[var(--color-primary)]/20 outline-none"
+                  className="pl-10 pr-4 py-2 bg-slate-100 border-none rounded-lg text-sm w-40 md:w-64 focus:ring-2 focus:ring-[var(--color-primary)]/20 outline-none"
                   placeholder="일정 검색..."
                   type="text"
                   value={searchQuery}
@@ -241,7 +242,7 @@ export default function CalendarPage() {
           {/* Calendar and Side Panel Split */}
           <div className="flex-1 flex overflow-hidden">
             {/* Full Month Calendar View */}
-            <div className="flex-1 bg-white p-6 overflow-y-auto">
+            <div className="flex-1 bg-white p-3 md:p-6 overflow-y-auto pb-20 md:pb-6">
               <div className="grid grid-cols-7 border-l border-t border-slate-100">
                 {/* Weekdays Header */}
                 {['일', '월', '화', '수', '목', '금', '토'].map((day, i) => (
@@ -256,7 +257,7 @@ export default function CalendarPage() {
 
                 {/* Previous month trailing days */}
                 {Array.from({ length: firstDay }).map((_, i) => (
-                  <div key={`prev-${i}`} className="min-h-[100px] p-2 border-r border-b border-slate-100 text-slate-300">
+                  <div key={`prev-${i}`} className="min-h-[60px] md:min-h-[100px] p-1.5 md:p-2 border-r border-b border-slate-100 text-slate-300">
                     {prevMonthDays - firstDay + 1 + i}
                   </div>
                 ))}
@@ -280,7 +281,7 @@ export default function CalendarPage() {
                     <div
                       key={day}
                       onClick={() => setSelectedDay(day)}
-                      className={`min-h-[100px] p-2 flex flex-col items-start border-r border-b border-slate-100 cursor-pointer transition-colors ${isSelected ? 'bg-[var(--color-primary)]/5' : 'hover:bg-slate-50'
+                      className={`min-h-[60px] md:min-h-[100px] p-1.5 md:p-2 flex flex-col items-start border-r border-b border-slate-100 cursor-pointer transition-colors ${isSelected ? 'bg-[var(--color-primary)]/5' : 'hover:bg-slate-50'
                         }`}
                     >
                       {/* 날짜 헤더 영역 */}
@@ -300,8 +301,26 @@ export default function CalendarPage() {
                         )}
                       </div>
 
-                      {/* 이벤트 표시 영역 */}
-                      <div className="flex flex-col gap-1 w-full mt-1">
+                      {/* 이벤트 표시 영역 — 모바일: 색상 점, 데스크톱: 텍스트 */}
+                      {/* 모바일 */}
+                      <div className="flex gap-1 flex-wrap mt-1 md:hidden">
+                        {blocks.slice(0, 4).map((block) => (
+                          <span
+                            key={block.id}
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              block.color === 'red' ? 'bg-red-500' :
+                              block.color === 'green' ? 'bg-green-500' :
+                              block.color === 'purple' ? 'bg-purple-500' :
+                              block.color === 'yellow' ? 'bg-yellow-500' :
+                              block.color === 'orange' ? 'bg-orange-500' :
+                              block.color === 'gray' ? 'bg-slate-400' :
+                              'bg-[var(--color-primary)]'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      {/* 데스크톱 */}
+                      <div className="hidden md:flex flex-col gap-1 w-full mt-1">
                         {displayBlocks.map((block) => (
                           <div
                             key={block.id}
@@ -319,7 +338,7 @@ export default function CalendarPage() {
                           </div>
                         ))}
                         {moreCount > 0 && (
-                          <div 
+                          <div
                             onClick={(e) => { e.stopPropagation(); goToDiary(day); }}
                             className="text-[10px] text-slate-400 font-medium px-1 mt-0.5 hover:text-slate-600 hover:underline cursor-pointer transition-colors"
                           >
@@ -333,7 +352,7 @@ export default function CalendarPage() {
 
                 {/* Next month leading days */}
                 {Array.from({ length: trailingDays }).map((_, i) => (
-                  <div key={`next-${i}`} className="min-h-[100px] p-2 border-r border-b border-slate-100 text-slate-300">
+                  <div key={`next-${i}`} className="min-h-[60px] md:min-h-[100px] p-1.5 md:p-2 border-r border-b border-slate-100 text-slate-300">
                     {i + 1}
                   </div>
                 ))}
@@ -341,7 +360,7 @@ export default function CalendarPage() {
             </div>
 
             {/* Side Panel (Selected Day's Summary) */}
-            <aside className="w-80 bg-[var(--color-bg)] border-l border-slate-200 p-6 flex flex-col gap-6 overflow-y-auto shrink-0">
+            <aside className="w-80 bg-[var(--color-bg)] border-l border-slate-200 p-6 hidden lg:flex flex-col gap-6 overflow-y-auto shrink-0">
               <div>
                 <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">
                   오늘의 일정 ({currentMonth.month + 1}월 {selectedDay}일)
@@ -416,6 +435,7 @@ export default function CalendarPage() {
           </div>
         </main>
       </div>
+      <MobileNav active="calendar" />
     </div>
   );
 }

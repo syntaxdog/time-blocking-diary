@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useDiaryStore } from '@/store/diaryStore';
 import Sidebar from '@/components/Sidebar';
+import MobileNav from '@/components/MobileNav';
 import Header from '@/components/Header';
 
 type SettingsTab = 'info' | 'theme' | 'security';
@@ -82,7 +83,7 @@ export default function ProfilePage() {
       <div className="flex flex-1 overflow-hidden">
         <Sidebar active="profile" />
 
-        <main className="flex-1 overflow-y-auto flex justify-center py-8 px-4 sm:px-6">
+        <main className="flex-1 overflow-y-auto flex justify-center py-8 pb-20 md:pb-8 px-4 sm:px-6">
           <div className="w-full max-w-[960px] flex flex-col md:flex-row gap-8">
             {/* Left Column: Navigation & Profile Info */}
             <aside className="w-full md:w-1/3 flex flex-col gap-6">
@@ -264,6 +265,7 @@ export default function ProfilePage() {
           </div>
         </main>
       </div>
+      <MobileNav active="profile" />
     </div>
   );
 }

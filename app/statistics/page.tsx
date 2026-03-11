@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import { useDiaryStore } from '@/store/diaryStore';
 
 import Sidebar from '@/components/Sidebar';
+import MobileNav from '@/components/MobileNav';
 
 export default function StatisticsPage() {
   const { diaries } = useDiaryStore();
@@ -182,7 +183,7 @@ export default function StatisticsPage() {
         <Sidebar active="statistics" />
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col gap-8">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-20 md:pb-8 flex flex-col gap-8">
           {/* Welcome Banner */}
           <div className="bg-gradient-to-r from-[var(--color-primary)] to-blue-500 p-6 rounded-2xl text-white shadow-lg">
             <h2 className="text-sm font-medium opacity-80 mb-1">생산성 분석</h2>
@@ -326,6 +327,7 @@ export default function StatisticsPage() {
           </div>
         </main>
       </div>
+      <MobileNav active="statistics" />
     </div>
   );
 }

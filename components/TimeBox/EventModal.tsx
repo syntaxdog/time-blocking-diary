@@ -35,13 +35,13 @@ export default function EventModal({ startSlot, endSlot, onConfirm, onCancel, ex
   }, [onCancel]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30"
       onMouseDown={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
       <div
         role="dialog"
         aria-modal="true"
         aria-label={existing ? '일정 수정' : '일정 등록'}
-        className="w-80 rounded-2xl p-5 flex flex-col gap-4 shadow-xl"
+        className="w-full sm:w-80 rounded-t-2xl sm:rounded-2xl p-5 flex flex-col gap-4 shadow-xl pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:pb-5"
         style={{ background: 'var(--color-surface)' }}
         onMouseDown={(e) => e.stopPropagation()}
       >

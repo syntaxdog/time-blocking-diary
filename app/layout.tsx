@@ -10,6 +10,12 @@ export const metadata: Metadata = {
   description: 'Time Blocking 다이어리 — 하루를 디자인하세요',
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
 

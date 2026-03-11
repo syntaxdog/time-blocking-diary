@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import { useState, useMemo } from 'react';
 import { useDiaryStore } from '@/store/diaryStore';
 import Sidebar from '@/components/Sidebar';
+import MobileNav from '@/components/MobileNav';
 
 export default function HomePage() {
   const router = useRouter();
@@ -104,7 +105,7 @@ export default function HomePage() {
         <Sidebar active="home" />
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col gap-8">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-20 md:pb-8 flex flex-col gap-8">
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
             <h2 className="text-sm text-slate-500 font-medium mb-3">나의 비전 선언</h2>
             <p className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-primary)] to-blue-600 tracking-tight leading-relaxed" style={{ fontFamily: 'Pretendard, sans-serif' }}>
@@ -266,6 +267,7 @@ export default function HomePage() {
           </div>
         </main>
       </div>
+      <MobileNav active="home" />
     </div>
   );
 }

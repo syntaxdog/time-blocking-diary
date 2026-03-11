@@ -23,7 +23,20 @@ function useIsDark() {
   return dark;
 }
 
-const BLOCK_HEIGHT = 28; // px per slot
+const BLOCK_HEIGHT_DESKTOP = 28;
+const BLOCK_HEIGHT_MOBILE = 36;
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  return isMobile;
+}
 
 function formatDuration(slots: number): string {
   const totalMin = slots * 30;
@@ -40,6 +53,8 @@ type ModalState =
 
 export default function TimeBox({ date }: { date: string }) {
   const isDark = useIsDark();
+  const isMobile = useIsMobile();
+  const BLOCK_HEIGHT = isMobile ? BLOCK_HEIGHT_MOBILE : BLOCK_HEIGHT_DESKTOP;
   const { diaries, addTimeBlock, updateTimeBlock, removeTimeBlock } = useDiaryStore();
   const timeBlocks = diaries[date]?.timeBlocks ?? [];
   const big3Suggestions = (diaries[date]?.bigThree ?? [])
@@ -134,7 +149,7 @@ export default function TimeBox({ date }: { date: string }) {
                 style={{
                   top: i * BLOCK_HEIGHT,
                   width: 44,
-                  fontSize: 10,
+                  fontSize: isMobile ? 11 : 10,
                   lineHeight: `${BLOCK_HEIGHT}px`,
                   color: 'var(--color-muted)',
                   fontWeight: 600,
@@ -270,7 +285,7 @@ function BlockItem({
         background: accent.bg,
         borderLeft: `3px solid ${accent.bar}`,
         color: accent.text,
-        fontSize: 11,
+        fontSize: blockHeight > 30 ? 13 : 11,
         fontWeight: 600,
         paddingLeft: 8,
         paddingRight: 4,

@@ -40,15 +40,15 @@ export default function DiaryPage({ params }: { params: Promise<{ date: string }
             <span className="material-symbols-outlined text-2xl">event_note</span>
           </button>
           <div>
-            <h1 className="text-3xl font-black tracking-tight">{monthDay}</h1>
+            <h1 className="text-xl md:text-3xl font-black tracking-tight">{monthDay}</h1>
             <p className="text-slate-500 font-medium">{dayNames[dayOfWeek]}요일 · {dayEngNames[dayOfWeek]}</p>
           </div>
         </div>
-        <nav className="flex items-center bg-white p-1 rounded-xl shadow-sm border border-slate-200">
+        <nav className="flex items-center bg-white p-1 rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
           {weekDays.map((d, idx) => (
             <button
               key={d}
-              className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors ${
+              className={`px-2.5 py-1.5 md:px-4 md:py-2 rounded-lg text-xs md:text-sm font-bold transition-colors shrink-0 ${
                 idx === currentDayIdx
                   ? 'bg-[var(--color-primary)] text-white shadow-md'
                   : idx >= 5
@@ -80,7 +80,7 @@ export default function DiaryPage({ params }: { params: Promise<{ date: string }
       </header>
 
       {/* Main 3-Column Layout */}
-      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
           {/* Left Column: Mindset & Reflection */}
