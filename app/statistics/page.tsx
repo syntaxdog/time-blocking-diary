@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import Header from '@/components/Header';
 import { useDiaryStore } from '@/store/diaryStore';
 
 import Sidebar from '@/components/Sidebar';
@@ -174,26 +175,7 @@ export default function StatisticsPage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-[var(--color-primary)] rounded-lg flex items-center justify-center text-white">
-            <span className="material-symbols-outlined text-xl">event_note</span>
-          </div>
-          <h1 className="text-xl font-bold tracking-tight">Time Blocking Diary</h1>
-        </div>
-        <div className="flex items-center gap-3">
-          <button className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-600">
-            <span className="material-symbols-outlined">notifications</span>
-          </button>
-          <button className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-600">
-            <span className="material-symbols-outlined">settings</span>
-          </button>
-          <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-transparent hover:border-[var(--color-primary)] transition-colors cursor-pointer ml-2 flex items-center justify-center text-slate-500">
-            <span className="material-symbols-outlined">person</span>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Layout */}
       <div className="flex flex-1 overflow-hidden">

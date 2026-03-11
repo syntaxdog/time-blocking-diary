@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useMemo } from 'react';
+import Header from '@/components/Header';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useDiaryStore } from '@/store/diaryStore';
 import Sidebar from '@/components/Sidebar';
 import { slotToTime } from '@/lib/utils';
@@ -19,6 +20,63 @@ export default function CalendarPage() {
   const todayMonth = now.getMonth();
   const todayYear = now.getFullYear();
   const [selectedDay, setSelectedDay] = useState(todayDate);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  // Close search dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  // Search results across all diary entries
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    const results: { dateStr: string; label: string; type: string }[] = [];
+
+    Object.entries(diaries).forEach(([dateStr, diary]) => {
+      diary.timeBlocks?.forEach((tb) => {
+        if (tb.label?.toLowerCase().includes(q)) {
+          results.push({ dateStr, label: tb.label, type: '타임블록' });
+        }
+      });
+      diary.bigThree?.forEach((item) => {
+        if (item?.text?.toLowerCase().includes(q)) {
+          results.push({ dateStr, label: item.text, type: 'Big Three' });
+        }
+      });
+      diary.brainDump?.forEach((item) => {
+        const text = typeof item === 'string' ? item : item?.text || '';
+        if (text.toLowerCase().includes(q)) {
+          results.push({ dateStr, label: text, type: '브레인덤프' });
+        }
+      });
+      if (diary.futureViz?.toLowerCase().includes(q)) {
+        results.push({ dateStr, label: diary.futureViz, type: '미래 시각화' });
+      }
+      if (diary.identity?.toLowerCase().includes(q)) {
+        results.push({ dateStr, label: diary.identity, type: '정체성' });
+      }
+      if (diary.motivation?.toLowerCase().includes(q)) {
+        results.push({ dateStr, label: diary.motivation, type: '동기부여' });
+      }
+    });
+
+    return results.slice(0, 20);
+  }, [searchQuery, diaries]);
+
+  function goToSearchResult(dateStr: string) {
+    setSearchQuery('');
+    setSearchOpen(false);
+    router.push(`/diary/${dateStr}`);
+  }
 
   // Calendar generation
   const firstDay = new Date(currentMonth.year, currentMonth.month, 1).getDay();
@@ -119,26 +177,7 @@ export default function CalendarPage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-[var(--color-primary)] rounded-lg flex items-center justify-center text-white">
-            <span className="material-symbols-outlined text-xl">event_note</span>
-          </div>
-          <h1 className="text-xl font-bold tracking-tight">Time Blocking Diary</h1>
-        </div>
-        <div className="flex items-center gap-3">
-          <button className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-600">
-            <span className="material-symbols-outlined">notifications</span>
-          </button>
-          <button className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-600">
-            <span className="material-symbols-outlined">settings</span>
-          </button>
-          <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-transparent hover:border-[var(--color-primary)] transition-colors cursor-pointer ml-2 flex items-center justify-center text-slate-500">
-            <span className="material-symbols-outlined">person</span>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Layout */}
       <div className="flex flex-1 overflow-hidden">
@@ -162,13 +201,39 @@ export default function CalendarPage() {
               <button onClick={goToToday} className="px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-50">오늘</button>
             </div>
             <div className="flex items-center gap-4">
-              <div className="relative">
+              <div className="relative" ref={searchRef}>
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[20px]">search</span>
                 <input
                   className="pl-10 pr-4 py-2 bg-slate-100 border-none rounded-lg text-sm w-64 focus:ring-2 focus:ring-[var(--color-primary)]/20 outline-none"
                   placeholder="일정 검색..."
                   type="text"
+                  value={searchQuery}
+                  onChange={(e) => { setSearchQuery(e.target.value); setSearchOpen(true); }}
+                  onFocus={() => setSearchOpen(true)}
                 />
+                {searchOpen && searchQuery.trim() && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl border border-slate-200 shadow-lg z-20 max-h-80 overflow-y-auto">
+                    {searchResults.length > 0 ? (
+                      searchResults.map((result, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => goToSearchResult(result.dateStr)}
+                          className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-b-0 flex items-start gap-3"
+                        >
+                          <span className="text-xs text-slate-400 shrink-0 mt-0.5">{result.dateStr}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{result.label}</p>
+                            <span className="text-[11px] text-slate-400">{result.type}</span>
+                          </div>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-4 py-6 text-center text-sm text-slate-400">
+                        검색 결과가 없습니다
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -177,7 +242,7 @@ export default function CalendarPage() {
           <div className="flex-1 flex overflow-hidden">
             {/* Full Month Calendar View */}
             <div className="flex-1 bg-white p-6 overflow-y-auto">
-              <div className="grid grid-cols-7 border-l border-t border-slate-100 h-full min-h-[600px]">
+              <div className="grid grid-cols-7 border-l border-t border-slate-100">
                 {/* Weekdays Header */}
                 {['일', '월', '화', '수', '목', '금', '토'].map((day, i) => (
                   <div
@@ -204,30 +269,64 @@ export default function CalendarPage() {
                     currentMonth.month === todayMonth &&
                     currentMonth.year === todayYear;
                   const isSelected = day === selectedDay;
+                  const dateStr = `${currentMonth.year}-${String(currentMonth.month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                  const diary = diaries[dateStr];
                   const hasEntry = daysWithEntries.has(day);
+                  const blocks = diary?.timeBlocks || [];
+                  const displayBlocks = blocks.slice(0, 3);
+                  const moreCount = blocks.length > 3 ? blocks.length - 3 : 0;
 
                   return (
                     <div
                       key={day}
                       onClick={() => setSelectedDay(day)}
-                      onDoubleClick={() => goToDiary(day)}
-                      className={`min-h-[100px] p-2 border-r border-b border-slate-100 cursor-pointer transition-colors ${isSelected ? 'bg-[var(--color-primary)]/5' : 'hover:bg-slate-50'
+                      className={`min-h-[100px] p-2 flex flex-col items-start border-r border-b border-slate-100 cursor-pointer transition-colors ${isSelected ? 'bg-[var(--color-primary)]/5' : 'hover:bg-slate-50'
                         }`}
                     >
-                      {isToday ? (
-                        <span className="w-7 h-7 flex items-center justify-center rounded-full bg-[var(--color-primary)] text-white text-sm font-bold shadow-sm">
-                          {day}
-                        </span>
-                      ) : (
-                        <span className={`text-sm ${new Date(currentMonth.year, currentMonth.month, day).getDay() === 0 ? 'text-red-500' : 'font-medium'}`}>
-                          {day}
-                        </span>
-                      )}
-                      {hasEntry && (
-                        <div className="mt-1 flex gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                        </div>
-                      )}
+                      {/* 날짜 헤더 영역 */}
+                      <div className="flex justify-between items-start w-full">
+                        {isToday ? (
+                          <span className="w-7 h-7 flex items-center justify-center rounded-full bg-[var(--color-primary)] text-white text-sm font-bold shadow-sm mb-1 shrink-0">
+                            {day}
+                          </span>
+                        ) : (
+                          <span className={`w-7 h-7 flex items-center justify-center text-sm mb-1 shrink-0 ${new Date(currentMonth.year, currentMonth.month, day).getDay() === 0 ? 'text-red-500' : 'font-medium'}`}>
+                            {day}
+                          </span>
+                        )}
+                        {/* 이벤트는 없지만 텍스트 기록만 있는 경우 작은 점 표시 */}
+                        {hasEntry && blocks.length === 0 && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5 mr-1 shrink-0" />
+                        )}
+                      </div>
+
+                      {/* 이벤트 표시 영역 */}
+                      <div className="flex flex-col gap-1 w-full mt-1">
+                        {displayBlocks.map((block) => (
+                          <div
+                            key={block.id}
+                            className={`flex items-center text-[10px] w-full pl-1.5 py-0.5 truncate font-medium text-slate-700 border-l-[3px] hover:bg-slate-50 transition-colors ${
+                              block.color === 'red' ? 'border-red-500' :
+                              block.color === 'green' ? 'border-green-500' :
+                              block.color === 'purple' ? 'border-purple-500' :
+                              block.color === 'yellow' ? 'border-yellow-500' :
+                              block.color === 'orange' ? 'border-orange-500' :
+                              block.color === 'gray' ? 'border-slate-400' :
+                              'border-[var(--color-primary)]'
+                            }`}
+                          >
+                            <span className="truncate">{block.label || '(제목 없음)'}</span>
+                          </div>
+                        ))}
+                        {moreCount > 0 && (
+                          <div 
+                            onClick={(e) => { e.stopPropagation(); goToDiary(day); }}
+                            className="text-[10px] text-slate-400 font-medium px-1 mt-0.5 hover:text-slate-600 hover:underline cursor-pointer transition-colors"
+                          >
+                            +{moreCount}개 더보기
+                          </div>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
@@ -269,19 +368,20 @@ export default function CalendarPage() {
                     <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
                       <span className="material-symbols-outlined text-slate-300 text-[32px] mb-2">event_busy</span>
                       <p className="text-sm text-slate-400">등록된 일정이 없습니다</p>
-                      <button
-                        onClick={() => goToDiary(selectedDay)}
-                        className="mt-3 text-xs text-[var(--color-primary)] font-semibold hover:underline"
-                      >
-                        + 다이어리 작성하기
-                      </button>
                     </div>
                   )}
+                  <button
+                    onClick={() => goToDiary(selectedDay)}
+                    className="mt-3 w-full py-2.5 bg-[var(--color-primary)] text-white text-sm font-semibold rounded-xl hover:bg-red-600 transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">edit_note</span>
+                    {daysWithEntries.has(selectedDay) ? '다이어리 보기' : '다이어리 작성하기'}
+                  </button>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">월간 진행도</h3>
+                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">월간 기록률</h3>
                 <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                   <div className="flex items-end justify-between mb-2">
                     <span className="text-2xl font-bold">{progressPct}%</span>

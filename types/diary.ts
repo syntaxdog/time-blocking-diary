@@ -38,4 +38,5 @@ export type DiaryData = {
   motivation: string;
   gratitude: [string, string, string];
   morningRoutine: string;
+  updatedAt?: number; // ms timestamp – last modification time
 };

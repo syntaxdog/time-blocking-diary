@@ -102,7 +102,7 @@ export const useDiaryStore = create<DiaryStore>()(
           const diary = s.diaries[date] ?? emptyDiary(date);
           const bigThree = [...diary.bigThree] as [BigThreeItem, BigThreeItem, BigThreeItem];
           bigThree[idx] = { ...bigThree[idx], text };
-          return { diaries: { ...s.diaries, [date]: { ...diary, bigThree } } };
+          return { diaries: { ...s.diaries, [date]: { ...diary, bigThree, updatedAt: Date.now() } } };
         }),
 
       toggleBigThree: (date, idx) =>
@@ -110,7 +110,7 @@ export const useDiaryStore = create<DiaryStore>()(
           const diary = s.diaries[date] ?? emptyDiary(date);
           const bigThree = [...diary.bigThree] as [BigThreeItem, BigThreeItem, BigThreeItem];
           bigThree[idx] = { ...bigThree[idx], checked: !bigThree[idx].checked };
-          return { diaries: { ...s.diaries, [date]: { ...diary, bigThree } } };
+          return { diaries: { ...s.diaries, [date]: { ...diary, bigThree, updatedAt: Date.now() } } };
         }),
 
       addBrainItem: (date) =>
@@ -120,7 +120,7 @@ export const useDiaryStore = create<DiaryStore>()(
           return {
             diaries: {
               ...s.diaries,
-              [date]: { ...diary, brainDump: [...diary.brainDump, item] },
+              [date]: { ...diary, brainDump: [...diary.brainDump, item], updatedAt: Date.now() },
             },
           };
         }),
@@ -134,6 +134,7 @@ export const useDiaryStore = create<DiaryStore>()(
               [date]: {
                 ...diary,
                 brainDump: diary.brainDump.map((i) => (i.id === id ? { ...i, text } : i)),
+                updatedAt: Date.now(),
               },
             },
           };
@@ -150,6 +151,7 @@ export const useDiaryStore = create<DiaryStore>()(
                 brainDump: diary.brainDump.map((i) =>
                   i.id === id ? { ...i, checked: !i.checked } : i
                 ),
+                updatedAt: Date.now(),
               },
             },
           };
@@ -164,6 +166,7 @@ export const useDiaryStore = create<DiaryStore>()(
               [date]: {
                 ...diary,
                 brainDump: diary.brainDump.filter((i) => i.id !== id),
+                updatedAt: Date.now(),
               },
             },
           };
@@ -176,7 +179,7 @@ export const useDiaryStore = create<DiaryStore>()(
           return {
             diaries: {
               ...s.diaries,
-              [date]: { ...diary, timeBlocks: [...diary.timeBlocks, newBlock] },
+              [date]: { ...diary, timeBlocks: [...diary.timeBlocks, newBlock], updatedAt: Date.now() },
             },
           };
         }),
@@ -190,6 +193,7 @@ export const useDiaryStore = create<DiaryStore>()(
               [date]: {
                 ...diary,
                 timeBlocks: diary.timeBlocks.map((b) => (b.id === id ? { ...b, ...patch } : b)),
+                updatedAt: Date.now(),
               },
             },
           };
@@ -204,6 +208,7 @@ export const useDiaryStore = create<DiaryStore>()(
               [date]: {
                 ...diary,
                 timeBlocks: diary.timeBlocks.filter((b) => b.id !== id),
+                updatedAt: Date.now(),
               },
             },
           };
@@ -215,7 +220,7 @@ export const useDiaryStore = create<DiaryStore>()(
           return {
             diaries: {
               ...s.diaries,
-              [date]: { ...diary, feedback: { ...diary.feedback, [key]: value } },
+              [date]: { ...diary, feedback: { ...diary.feedback, [key]: value }, updatedAt: Date.now() },
             },
           };
         }),
@@ -224,7 +229,7 @@ export const useDiaryStore = create<DiaryStore>()(
         set((s) => {
           const diary = s.diaries[date] ?? emptyDiary(date);
           return {
-            diaries: { ...s.diaries, [date]: { ...diary, [field]: value } },
+            diaries: { ...s.diaries, [date]: { ...diary, [field]: value, updatedAt: Date.now() } },
           };
         }),
 
@@ -233,7 +238,7 @@ export const useDiaryStore = create<DiaryStore>()(
           const diary = s.diaries[date] ?? emptyDiary(date);
           const gratitude = [...diary.gratitude] as [string, string, string];
           gratitude[idx] = value;
-          return { diaries: { ...s.diaries, [date]: { ...diary, gratitude } } };
+          return { diaries: { ...s.diaries, [date]: { ...diary, gratitude, updatedAt: Date.now() } } };
         }),
     }),
     {

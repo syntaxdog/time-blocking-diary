@@ -1,13 +1,17 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import ThemeProvider from '@/components/ThemeProvider';
+import { SessionProvider } from 'next-auth/react';
+import { auth } from '@/auth';
 
 export const metadata: Metadata = {
   title: 'Time Blocking Diary',
   description: 'Time Blocking 다이어리 — 하루를 디자인하세요',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
@@ -25,7 +29,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-screen antialiased">
-        <ThemeProvider>{children}</ThemeProvider>
+        <SessionProvider session={session}>
+          <ThemeProvider>{children}</ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );

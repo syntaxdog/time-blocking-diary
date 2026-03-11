@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-
+import Header from '@/components/Header';
 import { useState, useMemo } from 'react';
 import { useDiaryStore } from '@/store/diaryStore';
 import Sidebar from '@/components/Sidebar';
@@ -66,7 +66,19 @@ export default function HomePage() {
 
   const recentLogs = useMemo(() => {
     return Object.entries(diaries)
-      .sort(([a], [b]) => b.localeCompare(a))
+      .filter(([, diary]) => {
+        // 내용이 있는 다이어리만 표시
+        const hasBig3 = diary.bigThree.some((b) => b.text.trim());
+        const hasBlocks = diary.timeBlocks.length > 0;
+        const hasBrainDump = diary.brainDump.length > 0;
+        return hasBig3 || hasBlocks || hasBrainDump;
+      })
+      .sort(([aDate, aDiary], [bDate, bDiary]) => {
+        // updatedAt 기준 내림차순, 없으면 날짜 기반 fallback
+        const aTime = aDiary.updatedAt ?? new Date(aDate).getTime();
+        const bTime = bDiary.updatedAt ?? new Date(bDate).getTime();
+        return bTime - aTime;
+      })
       .slice(0, 3)
       .map(([dateStr, diary]) => {
         const d = new Date(dateStr);
@@ -85,26 +97,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-[var(--color-primary)] rounded-lg flex items-center justify-center text-white">
-            <span className="material-symbols-outlined text-xl">event_note</span>
-          </div>
-          <h1 className="text-xl font-bold tracking-tight">Time Blocking Diary</h1>
-        </div>
-        <div className="flex items-center gap-3">
-          <button className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-600">
-            <span className="material-symbols-outlined">notifications</span>
-          </button>
-          <button className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-600">
-            <span className="material-symbols-outlined">settings</span>
-          </button>
-          <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-transparent hover:border-[var(--color-primary)] transition-colors cursor-pointer ml-2 flex items-center justify-center text-slate-500">
-            <span className="material-symbols-outlined">person</span>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Layout */}
       <div className="flex flex-1 overflow-hidden">
@@ -176,7 +169,7 @@ export default function HomePage() {
                     : null;
                   return avg !== null ? (
                     <div className="flex flex-col items-end">
-                      <span className="text-3xl font-extrabold text-indigo-600">{avg}%</span>
+                      <span className="text-3xl font-extrabold" style={{ color: 'var(--big3-accent)' }}>{avg}%</span>
                       <span className="text-[10px] text-slate-400 mt-0.5">주간 평균</span>
                     </div>
                   ) : null;
@@ -191,7 +184,7 @@ export default function HomePage() {
                       className="text-xs font-bold leading-none mt-auto shrink-0"
                       style={{
                         color: item.isFuture ? 'transparent'
-                          : item.hasData || item.isToday ? '#4f46e5'
+                          : item.hasData || item.isToday ? 'var(--big3-accent)'
                           : 'transparent',
                         minHeight: 16,
                       }}
@@ -201,8 +194,8 @@ export default function HomePage() {
                     <div
                       className="w-full rounded-xl overflow-hidden relative flex-1"
                       style={{
-                        background: item.isFuture ? 'transparent' : '#f1f5f9',
-                        border: item.isFuture ? '1.5px dashed #e2e8f0' : 'none',
+                        background: item.isFuture ? 'transparent' : 'var(--big3-bar-bg)',
+                        border: item.isFuture ? '1.5px dashed var(--big3-future-border)' : '1px solid var(--big3-bar-border)',
                         minHeight: '60px',
                       }}
                     >
@@ -212,7 +205,7 @@ export default function HomePage() {
                           style={{
                             height: `${item.value}%`,
                             background: item.hasData || item.isToday
-                              ? 'linear-gradient(to top, #4f46e5, #818cf8)'
+                              ? 'var(--big3-bar-fill)'
                               : 'transparent',
                           }}
                         />
@@ -221,9 +214,9 @@ export default function HomePage() {
                     <span
                       className="text-[11px] font-bold shrink-0"
                       style={{
-                        color: item.isFuture ? '#e2e8f0'
-                          : item.hasData || item.isToday ? '#4f46e5'
-                          : '#94a3b8',
+                        color: item.isFuture ? 'var(--big3-future-text)'
+                          : item.hasData || item.isToday ? 'var(--big3-accent)'
+                          : 'var(--big3-muted-text)',
                       }}
                     >
                       {item.day}
@@ -242,7 +235,6 @@ export default function HomePage() {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-slate-900">최근 데일리 로그</h3>
-              <button className="text-sm text-slate-500 hover:text-[var(--color-primary)] transition-colors">모두 보기</button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {recentLogs.length === 0 ? (
@@ -261,7 +253,7 @@ export default function HomePage() {
                       <div className={`w-2 h-2 rounded-full ${log.dotColor}`} />
                       <span className="text-sm font-semibold text-slate-700">{log.label}</span>
                     </div>
-                    <span className="material-symbols-outlined text-slate-400 group-hover:text-[var(--color-primary)] transition-colors text-lg">
+                    <span className="material-symbols-outlined text-slate-400 text-lg">
                       open_in_new
                     </span>
                   </div>

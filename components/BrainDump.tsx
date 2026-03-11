@@ -31,14 +31,21 @@ export default function BrainDump({ date }: { date: string }) {
       <div className="space-y-3">
         {items.map((item) => (
           <div key={item.id} className={`flex items-center gap-3 ${item.checked ? 'opacity-50' : ''}`}>
+            <label className="relative flex items-center justify-center cursor-pointer shrink-0">
+              <input
+                type="checkbox"
+                checked={item.checked}
+                onChange={() => toggleBrainItem(date, item.id)}
+                className="peer sr-only"
+              />
+              <div className="w-5 h-5 rounded-[4px] border-2 border-slate-300 peer-checked:bg-[var(--color-primary)] peer-checked:border-transparent flex items-center justify-center transition-all bg-white">
+                {item.checked && (
+                  <span className="material-symbols-outlined text-white text-[14px] font-bold">check</span>
+                )}
+              </div>
+            </label>
             <input
-              type="checkbox"
-              checked={item.checked}
-              onChange={() => toggleBrainItem(date, item.id)}
-              className="rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)] w-5 h-5 border-slate-300 cursor-pointer"
-            />
-            <input
-              className={`flex-1 bg-transparent text-sm outline-none ${
+              className={`flex-1 bg-transparent text-sm outline-none transition-colors ${
                 item.checked ? 'line-through text-slate-400' : 'text-slate-600'
               }`}
               value={item.text}

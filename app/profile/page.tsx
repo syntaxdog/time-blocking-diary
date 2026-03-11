@@ -1,13 +1,20 @@
 'use client';
 
 import { useState } from 'react';
+import { useSession, signOut } from 'next-auth/react';
 import { useDiaryStore } from '@/store/diaryStore';
 import Sidebar from '@/components/Sidebar';
+import Header from '@/components/Header';
 
 type SettingsTab = 'info' | 'notifications' | 'theme' | 'security';
 
 export default function ProfilePage() {
+  const { data: session } = useSession();
   const { theme, setTheme, userVision, setUserVision } = useDiaryStore();
+  const userName = session?.user?.name || '사용자';
+  const userEmail = session?.user?.email || '';
+  const userInitial = userName.charAt(0);
+  const userImage = session?.user?.image;
   const [dailyReminder, setDailyReminder] = useState(true);
   const [autoBackup, setAutoBackup] = useState(false);
   const [activeTab, setActiveTab] = useState<SettingsTab>('info');
@@ -21,26 +28,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-[var(--color-primary)] rounded-lg flex items-center justify-center text-white">
-            <span className="material-symbols-outlined text-xl">event_note</span>
-          </div>
-          <h1 className="text-xl font-bold tracking-tight">Time Blocking Diary</h1>
-        </div>
-        <div className="flex items-center gap-3">
-          <button className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-600">
-            <span className="material-symbols-outlined">notifications</span>
-          </button>
-          <button className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-600">
-            <span className="material-symbols-outlined">settings</span>
-          </button>
-          <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border-2 border-transparent hover:border-[var(--color-primary)] transition-colors cursor-pointer ml-2 flex items-center justify-center text-slate-500">
-            <span className="material-symbols-outlined">person</span>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Layout */}
       <div className="flex flex-1 overflow-hidden">
@@ -53,17 +41,27 @@ export default function ProfilePage() {
               {/* Profile Card */}
               <div className="bg-white p-6 rounded-xl border border-slate-200 flex flex-col items-center text-center shadow-sm">
                 <div className="relative group">
-                  <div className="aspect-square bg-gradient-to-br from-[var(--color-primary)] to-blue-400 rounded-full h-32 w-32 border-4 border-[var(--color-primary)]/10 flex items-center justify-center text-white text-5xl font-bold">
-                    김
-                  </div>
-                  <button className="absolute bottom-0 right-0 bg-[var(--color-primary)] text-white p-2 rounded-full border-2 border-white shadow-lg">
-                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>photo_camera</span>
-                  </button>
+                  {userImage ? (
+                    <img
+                      src={userImage}
+                      alt="Profile"
+                      className="aspect-square rounded-full h-32 w-32 border-4 border-[var(--color-primary)]/10 object-cover"
+                    />
+                  ) : (
+                    <div className="aspect-square bg-gradient-to-br from-[var(--color-primary)] to-blue-400 rounded-full h-32 w-32 border-4 border-[var(--color-primary)]/10 flex items-center justify-center text-white text-5xl font-bold">
+                      {userInitial}
+                    </div>
+                  )}
                 </div>
-                <h1 className="mt-4 text-xl font-bold">김철수</h1>
-                <p className="text-slate-500 text-sm">chulsoo.kim@example.com</p>
+                <h1 className="mt-4 text-xl font-bold">{userName}</h1>
+                <p className="text-slate-500 text-sm">{userEmail}</p>
                 <div className="mt-4 flex gap-2 w-full">
-                  <button className="flex-1 py-2 px-4 rounded-lg bg-slate-100 text-xs font-semibold hover:bg-slate-200 transition-colors">로그아웃</button>
+                  <button
+                    onClick={() => signOut({ callbackUrl: '/login' })}
+                    className="flex-1 py-2 px-4 rounded-lg bg-slate-100 text-xs font-semibold hover:bg-slate-200 transition-colors"
+                  >
+                    로그아웃
+                  </button>
                   <button className="flex-1 py-2 px-4 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-xs font-semibold hover:bg-[var(--color-primary)]/20 transition-colors">편집</button>
                 </div>
               </div>
