@@ -50,7 +50,7 @@ function LoginContent() {
         <div className="flex flex-col items-center mb-8">
           <div className="relative group mb-6">
             <div className="absolute inset-0 bg-fuchsia-500 rounded-[18px] blur-lg opacity-40 group-hover:opacity-60 transition-opacity duration-500"></div>
-            <div className="relative w-16 h-16 bg-gradient-to-tr from-[var(--color-primary)] via-indigo-500 to-fuchsia-500 rounded-[18px] flex items-center justify-center text-white shadow-xl ring-1 ring-white/30 transform -rotate-3 hover:rotate-0 transition-transform duration-500">
+            <div className="relative w-16 h-16 bg-gradient-to-tr from-[var(--color-primary)] via-indigo-500 to-fuchsia-500 rounded-[18px] flex items-center justify-center text-white shadow-xl ring-1 ring-white/30 transform -rotate-3 group-hover:rotate-0 transition-transform duration-500">
               <svg className="w-8 h-8 drop-shadow-md" viewBox="0 0 24 24" fill="currentColor">
                 <rect x="4" y="4" width="7" height="6" rx="2" opacity="0.9" />
                 <rect x="4" y="12" width="7" height="8" rx="2" opacity="0.5" />
@@ -59,14 +59,11 @@ function LoginContent() {
               </svg>
             </div>
           </div>
-          <h1 className="text-2xl font-black tracking-tight flex items-baseline gap-2 mb-1">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-primary)] via-indigo-500 to-fuchsia-500">
-              Time
-            </span>
-            <span className="text-slate-800 tracking-tighter">Blocking</span>
-            <span className="font-medium text-slate-400 italic text-xl ml-0.5">Diary</span>
+          <h1 className="text-[28px] tracking-tight flex items-baseline mb-1">
+            <span className="font-extrabold text-slate-900">Time</span>
+            <span className="font-light text-slate-500 ml-1">Blocking</span>
           </h1>
-          <p className="text-sm text-slate-500 mt-1">로그인하여 시작하세요</p>
+          <p className="text-sm text-slate-400 font-medium tracking-wide">하루를 디자인하는 생산성 다이어리</p>
         </div>
 
         <div className="flex flex-col gap-3">
