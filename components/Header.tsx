@@ -34,7 +34,7 @@ export default function Header() {
           </div>
           <h1 className="text-[20px] tracking-tight flex items-baseline">
             <span className="font-extrabold text-slate-900">Time</span>
-            <span className="font-light text-slate-500 ml-0.5 hidden sm:inline">Blocking</span>
+            <span className="font-light text-slate-500 ml-0.5">Blocking</span>
           </h1>
         </div>
       </div>

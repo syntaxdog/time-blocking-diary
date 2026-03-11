@@ -31,52 +31,56 @@ export default function DiaryPage({ params }: { params: Promise<{ date: string }
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between mb-0 gap-4 border-b border-slate-200 bg-white px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => router.push('/')}
-            className="bg-[var(--color-primary)] p-2 rounded-lg text-white hover:opacity-90 transition-opacity"
-          >
-            <span className="material-symbols-outlined text-2xl">event_note</span>
-          </button>
-          <div>
-            <h1 className="text-xl md:text-3xl font-black tracking-tight">{monthDay}</h1>
-            <p className="text-slate-500 font-medium">{dayNames[dayOfWeek]}요일 · {dayEngNames[dayOfWeek]}</p>
+      <header className="flex flex-col gap-3 border-b border-slate-200 bg-white px-4 sm:px-6 lg:px-8 py-4">
+        {/* 상단: 날짜 + 네비게이션 버튼 */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 md:gap-4">
+            <button
+              onClick={() => router.push('/')}
+              className="bg-[var(--color-primary)] p-2 rounded-lg text-white hover:opacity-90 transition-opacity shrink-0"
+            >
+              <span className="material-symbols-outlined text-xl md:text-2xl">event_note</span>
+            </button>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-black tracking-tight">{monthDay}</h1>
+              <p className="text-sm md:text-base text-slate-500 font-medium">{dayNames[dayOfWeek]}요일 · {dayEngNames[dayOfWeek]}</p>
+            </div>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <button
+              onClick={() => router.push(`/diary/${addDays(date, -1)}`)}
+              className="p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+            >
+              <span className="material-symbols-outlined">chevron_left</span>
+            </button>
+            <button
+              onClick={() => router.push(`/diary/${addDays(date, 1)}`)}
+              className="p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+            >
+              <span className="material-symbols-outlined">chevron_right</span>
+            </button>
+            <button className="hidden md:flex p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
+              <span className="material-symbols-outlined">settings</span>
+            </button>
           </div>
         </div>
-        <nav className="flex items-center bg-white p-1 rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
+        {/* 하단: 요일 탭 */}
+        <nav className="flex items-center bg-slate-50 p-1 rounded-xl border border-slate-200 overflow-x-auto">
           {weekDays.map((d, idx) => (
             <button
               key={d}
-              className={`px-2.5 py-1.5 md:px-4 md:py-2 rounded-lg text-xs md:text-sm font-bold transition-colors shrink-0 ${
+              className={`flex-1 min-w-[36px] py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-bold transition-colors ${
                 idx === currentDayIdx
                   ? 'bg-[var(--color-primary)] text-white shadow-md'
                   : idx >= 5
-                  ? 'text-slate-400 hover:bg-slate-50'
-                  : 'text-slate-500 hover:bg-slate-50'
+                  ? 'text-slate-400 hover:bg-white'
+                  : 'text-slate-500 hover:bg-white'
               }`}
             >
               {d}
             </button>
           ))}
         </nav>
-        <div className="flex gap-2">
-          <button
-            onClick={() => router.push(`/diary/${addDays(date, -1)}`)}
-            className="p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
-          >
-            <span className="material-symbols-outlined">chevron_left</span>
-          </button>
-          <button
-            onClick={() => router.push(`/diary/${addDays(date, 1)}`)}
-            className="p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
-          >
-            <span className="material-symbols-outlined">chevron_right</span>
-          </button>
-          <button className="p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
-            <span className="material-symbols-outlined">settings</span>
-          </button>
-        </div>
       </header>
 
       {/* Main 3-Column Layout */}

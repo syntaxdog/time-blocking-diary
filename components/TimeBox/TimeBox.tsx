@@ -51,6 +51,14 @@ type ModalState =
   | { mode: 'create'; startSlot: number; endSlot: number }
   | { mode: 'edit'; block: TimeBlock };
 
+type ResizeState = {
+  blockId: string;
+  edge: 'top' | 'bottom';
+  originalStart: number;
+  originalEnd: number;
+  currentSlot: number;
+};
+
 export default function TimeBox({ date }: { date: string }) {
   const isDark = useIsDark();
   const isMobile = useIsMobile();
@@ -65,7 +73,12 @@ export default function TimeBox({ date }: { date: string }) {
   const [dragEnd, setDragEnd] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [modal, setModal] = useState<ModalState | null>(null);
+  const [resize, setResize] = useState<ResizeState | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+
+  // 모바일 스크롤 vs 드래그 구분용
+  const pendingDrag = useRef<{ pointerId: number; startY: number; startX: number; slot: number; target: HTMLElement } | null>(null);
+  const DRAG_THRESHOLD = 10; // px — 이 이상 세로 이동해야 드래그로 인식
 
   function pointerToSlot(clientY: number): number {
     if (!gridRef.current) return 0;
@@ -75,21 +88,95 @@ export default function TimeBox({ date }: { date: string }) {
     return Math.max(0, Math.min(TOTAL_SLOTS - 1, slot));
   }
 
+  // 리사이즈 시작 핸들러
+  const onResizeStart = useCallback((e: React.PointerEvent, blockId: string, edge: 'top' | 'bottom') => {
+    e.stopPropagation();
+    e.preventDefault();
+    const block = timeBlocks.find((b) => b.id === blockId);
+    if (!block) return;
+    gridRef.current?.setPointerCapture(e.pointerId);
+    setResize({
+      blockId,
+      edge,
+      originalStart: block.startSlot,
+      originalEnd: block.endSlot,
+      currentSlot: pointerToSlot(e.clientY),
+    });
+  }, [timeBlocks, BLOCK_HEIGHT]);
+
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     if ((e.target as HTMLElement).closest('[data-block]')) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    const slot = pointerToSlot(e.clientY);
-    setDragStart(slot);
-    setDragEnd(slot);
-    setIsDragging(true);
-  }, []);
+    if (isMobile) {
+      // 모바일: 즉시 드래그 시작하지 않고 대기
+      pendingDrag.current = {
+        pointerId: e.pointerId,
+        startY: e.clientY,
+        startX: e.clientX,
+        slot: pointerToSlot(e.clientY),
+        target: e.currentTarget as HTMLElement,
+      };
+    } else {
+      // 데스크톱: 기존 즉시 드래그
+      e.currentTarget.setPointerCapture(e.pointerId);
+      const slot = pointerToSlot(e.clientY);
+      setDragStart(slot);
+      setDragEnd(slot);
+      setIsDragging(true);
+    }
+  }, [isMobile, BLOCK_HEIGHT]);
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
+    // 리사이즈 중
+    if (resize) {
+      const slot = pointerToSlot(e.clientY);
+      setResize((prev) => prev ? { ...prev, currentSlot: slot } : null);
+      return;
+    }
+    // 모바일 대기 상태에서 임계값 체크
+    if (pendingDrag.current && !isDragging) {
+      const dx = Math.abs(e.clientX - pendingDrag.current.startX);
+      const dy = Math.abs(e.clientY - pendingDrag.current.startY);
+      // 가로 이동이 더 크면 스크롤 의도 → 무시
+      if (dx > DRAG_THRESHOLD) {
+        pendingDrag.current = null;
+        return;
+      }
+      // 세로 임계값 도달 → 드래그 확정
+      if (dy > DRAG_THRESHOLD) {
+        pendingDrag.current.target.setPointerCapture(pendingDrag.current.pointerId);
+        setDragStart(pendingDrag.current.slot);
+        setDragEnd(pointerToSlot(e.clientY));
+        setIsDragging(true);
+        pendingDrag.current = null;
+      }
+      return;
+    }
     if (!isDragging) return;
     setDragEnd(pointerToSlot(e.clientY));
-  }, [isDragging]);
+  }, [resize, isDragging, BLOCK_HEIGHT]);
 
   const onPointerUp = useCallback((e: React.PointerEvent) => {
+    // 리사이즈 완료
+    if (resize) {
+      const slot = pointerToSlot(e.clientY);
+      let newStart = resize.originalStart;
+      let newEnd = resize.originalEnd;
+      if (resize.edge === 'top') {
+        newStart = Math.min(slot, resize.originalEnd);
+      } else {
+        newEnd = Math.max(slot, resize.originalStart);
+      }
+      updateTimeBlock(date, resize.blockId, { startSlot: newStart, endSlot: newEnd });
+      setResize(null);
+      return;
+    }
+    // 모바일 대기 중 손 뗌 → 탭으로 처리 (1슬롯 블록 생성)
+    if (pendingDrag.current) {
+      const slot = pendingDrag.current.slot;
+      pendingDrag.current = null;
+      setModal({ mode: 'create', startSlot: slot, endSlot: slot });
+      return;
+    }
     if (!isDragging || dragStart === null) return;
     setIsDragging(false);
     const end = pointerToSlot(e.clientY);
@@ -98,7 +185,18 @@ export default function TimeBox({ date }: { date: string }) {
     setModal({ mode: 'create', startSlot, endSlot });
     setDragStart(null);
     setDragEnd(null);
-  }, [isDragging, dragStart]);
+  }, [resize, isDragging, dragStart, date, updateTimeBlock, BLOCK_HEIGHT]);
+
+  // 모바일 대기 중 포인터 캔슬 (스크롤 발생 등)
+  const onPointerCancel = useCallback(() => {
+    pendingDrag.current = null;
+    setResize(null);
+    if (isDragging) {
+      setIsDragging(false);
+      setDragStart(null);
+      setDragEnd(null);
+    }
+  }, [isDragging]);
 
   const highlightStart = dragStart !== null && dragEnd !== null ? Math.min(dragStart, dragEnd) : null;
   const highlightEnd = dragStart !== null && dragEnd !== null ? Math.max(dragStart, dragEnd) : null;
@@ -164,10 +262,11 @@ export default function TimeBox({ date }: { date: string }) {
           <div
             ref={gridRef}
             className="absolute top-0 bottom-0 right-0 no-select"
-            style={{ left: 48, touchAction: 'none' }}
+            style={{ left: 48, touchAction: isMobile && !isDragging ? 'pan-y' : 'none' }}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
+            onPointerCancel={onPointerCancel}
           >
             {/* 슬롯 배경선 */}
             {Array.from({ length: TOTAL_SLOTS }).map((_, i) => (
