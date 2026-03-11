@@ -18,6 +18,8 @@ export default function ProfilePage() {
   const [dailyReminder, setDailyReminder] = useState(true);
   const [autoBackup, setAutoBackup] = useState(false);
   const [activeTab, setActiveTab] = useState<SettingsTab>('info');
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState(userName);
 
   const tabItems: { id: SettingsTab; label: string; icon: string }[] = [
     { id: 'info', label: '회원 정보', icon: 'person' },
@@ -53,17 +55,51 @@ export default function ProfilePage() {
                     </div>
                   )}
                 </div>
-                <h1 className="mt-4 text-xl font-bold">{userName}</h1>
-                <p className="text-slate-500 text-sm">{userEmail}</p>
-                <div className="mt-4 flex gap-2 w-full">
-                  <button
-                    onClick={() => signOut({ callbackUrl: '/login' })}
-                    className="flex-1 py-2 px-4 rounded-lg bg-slate-100 text-xs font-semibold hover:bg-slate-200 transition-colors"
-                  >
-                    로그아웃
-                  </button>
-                  <button className="flex-1 py-2 px-4 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-xs font-semibold hover:bg-[var(--color-primary)]/20 transition-colors">편집</button>
-                </div>
+                {editing ? (
+                  <>
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="mt-4 w-full text-center text-xl font-bold border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]"
+                      autoFocus
+                    />
+                    <p className="text-slate-500 text-sm mt-1">{userEmail}</p>
+                    <div className="mt-4 flex gap-2 w-full">
+                      <button
+                        onClick={() => { setEditing(false); setEditName(userName); }}
+                        className="flex-1 py-2 px-4 rounded-lg bg-slate-100 text-xs font-semibold hover:bg-slate-200 transition-colors"
+                      >
+                        취소
+                      </button>
+                      <button
+                        onClick={() => setEditing(false)}
+                        className="flex-1 py-2 px-4 rounded-lg bg-[var(--color-primary)] text-white text-xs font-semibold hover:bg-[var(--color-primary)]/90 transition-colors"
+                      >
+                        저장
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h1 className="mt-4 text-xl font-bold">{userName}</h1>
+                    <p className="text-slate-500 text-sm">{userEmail}</p>
+                    <div className="mt-4 flex gap-2 w-full">
+                      <button
+                        onClick={() => signOut({ callbackUrl: '/login' })}
+                        className="flex-1 py-2 px-4 rounded-lg bg-slate-100 text-xs font-semibold hover:bg-slate-200 transition-colors"
+                      >
+                        로그아웃
+                      </button>
+                      <button
+                        onClick={() => { setEditName(userName); setEditing(true); }}
+                        className="flex-1 py-2 px-4 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-xs font-semibold hover:bg-[var(--color-primary)]/20 transition-colors"
+                      >
+                        편집
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Sidebar Nav */}

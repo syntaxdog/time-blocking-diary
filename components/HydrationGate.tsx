@@ -1,9 +1,20 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { useDiaryStore } from '@/store/diaryStore';
 
 export default function HydrationGate({ children }: { children: React.ReactNode }) {
   const hasHydrated = useDiaryStore((s) => s._hasHydrated);
+  const dbLoaded = useDiaryStore((s) => s._dbLoaded);
+  const loadFromDb = useDiaryStore((s) => s.loadFromDb);
+  const { status } = useSession();
+
+  useEffect(() => {
+    if (hasHydrated && status === 'authenticated' && !dbLoaded) {
+      loadFromDb();
+    }
+  }, [hasHydrated, status, dbLoaded, loadFromDb]);
 
   if (!hasHydrated) {
     return (
