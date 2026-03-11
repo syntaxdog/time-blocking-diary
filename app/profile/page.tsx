@@ -32,7 +32,8 @@ export default function ProfilePage() {
         }),
       });
       if (res.ok) {
-        await updateSession();
+        const updated = await res.json();
+        await updateSession({ name: updated.name, image: updated.image });
         setEditing(false);
       }
     } catch {

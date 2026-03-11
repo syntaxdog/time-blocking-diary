@@ -23,12 +23,12 @@ export default function Header() {
   return (
     <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-gradient-to-tr from-[var(--color-primary)] to-indigo-500 rounded-xl flex items-center justify-center text-white shadow-md shrink-0">
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="5" width="18" height="16" rx="4" />
-            <path d="M16 3v4M8 3v4M3 11h18" />
-            <circle cx="12" cy="16" r="3" />
-            <path d="M12 14.5v1.5l1 1" />
+        <div className="w-9 h-9 bg-gradient-to-tr from-[var(--color-primary)] via-indigo-500 to-fuchsia-500 rounded-[12px] flex items-center justify-center text-white shadow-md border-[0.5px] border-white/20 shrink-0 transform -rotate-2 hover:rotate-3 transition-transform duration-300">
+          <svg className="w-5 h-5 drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="4" y="4" width="7" height="6" rx="2" opacity="0.9" />
+            <rect x="4" y="12" width="7" height="8" rx="2" opacity="0.5" />
+            <rect x="13" y="4" width="7" height="10" rx="2" opacity="1" />
+            <rect x="13" y="16" width="7" height="4" rx="1.5" opacity="0.75" />
           </svg>
         </div>
         <h1 className="text-xl font-bold tracking-tight">Time Blocking Diary</h1>
