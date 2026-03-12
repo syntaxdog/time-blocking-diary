@@ -59,9 +59,6 @@ export default function DiaryPage({ params }: { params: Promise<{ date: string }
             >
               <span className="material-symbols-outlined">chevron_right</span>
             </button>
-            <button className="hidden md:flex p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
-              <span className="material-symbols-outlined">settings</span>
-            </button>
           </div>
         </div>
         {/* 하단: 요일 탭 */}
