@@ -103,7 +103,7 @@ export default function DiaryPage({ params }: { params: Promise<{ date: string }
           </div>
 
           {/* Right Column: Time Box */}
-          <div className="lg:col-span-4 order-1 lg:order-3 min-w-0">
+          <div className="lg:col-span-4 order-4 lg:order-3 min-w-0">
             <TimeBox date={date} />
           </div>
         </div>
