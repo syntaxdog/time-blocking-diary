@@ -195,18 +195,12 @@ export default function TimeBox({ date }: { date: string }) {
       }
     : null;
 
-  function handleConfirm(label: string, color: BlockColor) {
+  function handleConfirm(label: string, color: BlockColor, startSlot: number, endSlot: number) {
     if (!modal) return;
     if (modal.mode === 'create') {
-      addTimeBlock(date, {
-        startSlot: modal.startSlot,
-        endSlot: modal.endSlot,
-        label,
-        color,
-        column: 0,
-      });
+      addTimeBlock(date, { startSlot, endSlot, label, color, column: 0 });
     } else {
-      updateTimeBlock(date, modal.block.id, { label, color });
+      updateTimeBlock(date, modal.block.id, { label, color, startSlot, endSlot });
     }
     setModal(null);
   }
