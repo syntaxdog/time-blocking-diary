@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { BlockColor, TimeBlock } from '@/types/diary';
-import { slotToTime } from '@/lib/utils';
+import { slotToTime, TOTAL_SLOTS } from '@/lib/utils';
 
 const COLORS: { value: BlockColor; label: string; bg: string; dot: string }[] = [
   { value: 'blue',   label: '업무',      bg: '#eff6ff', dot: '#3b82f6' },
@@ -17,7 +17,7 @@ const COLORS: { value: BlockColor; label: string; bg: string; dot: string }[] = 
 type Props = {
   startSlot: number;
   endSlot: number;
-  onConfirm: (label: string, color: BlockColor) => void;
+  onConfirm: (label: string, color: BlockColor, startSlot: number, endSlot: number) => void;
   onCancel: () => void;
   existing?: Pick<TimeBlock, 'label' | 'color'>;
   onDelete?: () => void;
@@ -27,12 +27,34 @@ type Props = {
 export default function EventModal({ startSlot, endSlot, onConfirm, onCancel, existing, onDelete, suggestions }: Props) {
   const [label, setLabel] = useState(existing?.label ?? '');
   const [color, setColor] = useState<BlockColor>(existing?.color ?? 'blue');
+  const [localStart, setLocalStart] = useState(startSlot);
+  const [localEnd, setLocalEnd] = useState(endSlot);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel(); };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [onCancel]);
+
+  function adjustStart(delta: number) {
+    setLocalStart((s) => {
+      const next = Math.max(0, Math.min(localEnd, s + delta));
+      return next;
+    });
+  }
+
+  function adjustEnd(delta: number) {
+    setLocalEnd((e) => {
+      const next = Math.max(localStart, Math.min(TOTAL_SLOTS - 1, e + delta));
+      return next;
+    });
+  }
+
+  const slots = localEnd - localStart + 1;
+  const totalMin = slots * 30;
+  const dh = Math.floor(totalMin / 60);
+  const dm = totalMin % 60;
+  const durationLabel = dh > 0 && dm > 0 ? `${dh}시간 ${dm}분` : dh > 0 ? `${dh}시간` : `${dm}분`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30"
@@ -49,9 +71,16 @@ export default function EventModal({ startSlot, endSlot, onConfirm, onCancel, ex
           <h3 className="font-bold text-sm" style={{ color: 'var(--color-primary)' }}>
             {existing ? '일정 수정' : '일정 등록'}
           </h3>
-          <span className="text-xs" style={{ color: 'var(--color-muted)' }}>
-            {slotToTime(startSlot)} ~ {slotToTime(endSlot + 1)}
+          <span className="text-xs font-medium" style={{ color: 'var(--color-muted)' }}>
+            {durationLabel}
           </span>
+        </div>
+
+        {/* 시간 조정 */}
+        <div className="flex flex-col gap-2 rounded-xl p-3" style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)' }}>
+          <TimeRow label="시작" time={slotToTime(localStart)} onMinus={() => adjustStart(-1)} onPlus={() => adjustStart(1)} disableMinus={localStart <= 0} disablePlus={localStart >= localEnd} />
+          <div style={{ height: 1, background: 'var(--color-border)' }} />
+          <TimeRow label="종료" time={slotToTime(localEnd + 1)} onMinus={() => adjustEnd(-1)} onPlus={() => adjustEnd(1)} disableMinus={localEnd <= localStart} disablePlus={localEnd >= TOTAL_SLOTS - 1} />
         </div>
 
         {/* 일정명 */}
@@ -62,7 +91,7 @@ export default function EventModal({ startSlot, endSlot, onConfirm, onCancel, ex
           placeholder="일정명"
           value={label}
           onChange={(e) => setLabel(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && label.trim() && onConfirm(label.trim(), color)}
+          onKeyDown={(e) => e.key === 'Enter' && label.trim() && onConfirm(label.trim(), color, localStart, localEnd)}
         />
 
         {/* BIG3 빠른 선택 */}
@@ -131,7 +160,7 @@ export default function EventModal({ startSlot, endSlot, onConfirm, onCancel, ex
             취소
           </button>
           <button
-            onClick={() => label.trim() && onConfirm(label.trim(), color)}
+            onClick={() => label.trim() && onConfirm(label.trim(), color, localStart, localEnd)}
             disabled={!label.trim()}
             className="flex-1 rounded-xl py-2 text-sm font-semibold text-white transition-opacity disabled:opacity-40"
             style={{ background: 'var(--color-primary)' }}
@@ -139,6 +168,44 @@ export default function EventModal({ startSlot, endSlot, onConfirm, onCancel, ex
             확인
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function TimeRow({ label, time, onMinus, onPlus, disableMinus, disablePlus }: {
+  label: string;
+  time: string;
+  onMinus: () => void;
+  onPlus: () => void;
+  disableMinus: boolean;
+  disablePlus: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-xs font-semibold w-8" style={{ color: 'var(--color-muted)' }}>{label}</span>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onMinus}
+          disabled={disableMinus}
+          className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold transition-colors disabled:opacity-30"
+          style={{ background: 'var(--color-border)', color: 'var(--color-primary)' }}
+        >
+          −
+        </button>
+        <span className="text-sm font-bold tabular-nums w-12 text-center" style={{ color: 'var(--color-primary)' }}>
+          {time}
+        </span>
+        <button
+          type="button"
+          onClick={onPlus}
+          disabled={disablePlus}
+          className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold transition-colors disabled:opacity-30"
+          style={{ background: 'var(--color-border)', color: 'var(--color-primary)' }}
+        >
+          +
+        </button>
       </div>
     </div>
   );

@@ -76,9 +76,8 @@ export default function TimeBox({ date }: { date: string }) {
   const [resize, setResize] = useState<ResizeState | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
-  // 모바일 스크롤 vs 드래그 구분용
-  const pendingDrag = useRef<{ pointerId: number; startY: number; startX: number; slot: number; target: HTMLElement } | null>(null);
-  const DRAG_THRESHOLD = 10; // px — 이 이상 세로 이동해야 드래그로 인식
+  // 모바일 탭 감지용 (드래그 없음 — 스크롤 충돌 방지)
+  const mobileTouch = useRef<{ startY: number; startX: number; slot: number } | null>(null);
 
   function pointerToSlot(clientY: number): number {
     if (!gridRef.current) return 0;
@@ -107,16 +106,14 @@ export default function TimeBox({ date }: { date: string }) {
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     if ((e.target as HTMLElement).closest('[data-block]')) return;
     if (isMobile) {
-      // 모바일: 즉시 드래그 시작하지 않고 대기
-      pendingDrag.current = {
-        pointerId: e.pointerId,
+      // 모바일: setPointerCapture 절대 안 함 → 브라우저 스크롤 자유롭게
+      mobileTouch.current = {
         startY: e.clientY,
         startX: e.clientX,
         slot: pointerToSlot(e.clientY),
-        target: e.currentTarget as HTMLElement,
       };
     } else {
-      // 데스크톱: 기존 즉시 드래그
+      // 데스크톱: 즉시 드래그
       e.currentTarget.setPointerCapture(e.pointerId);
       const slot = pointerToSlot(e.clientY);
       setDragStart(slot);
@@ -126,29 +123,10 @@ export default function TimeBox({ date }: { date: string }) {
   }, [isMobile, BLOCK_HEIGHT]);
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
-    // 리사이즈 중
+    // 리사이즈 중 (데스크톱 전용)
     if (resize) {
       const slot = pointerToSlot(e.clientY);
       setResize((prev) => prev ? { ...prev, currentSlot: slot } : null);
-      return;
-    }
-    // 모바일 대기 상태에서 임계값 체크
-    if (pendingDrag.current && !isDragging) {
-      const dx = Math.abs(e.clientX - pendingDrag.current.startX);
-      const dy = Math.abs(e.clientY - pendingDrag.current.startY);
-      // 가로 이동이 더 크면 스크롤 의도 → 무시
-      if (dx > DRAG_THRESHOLD) {
-        pendingDrag.current = null;
-        return;
-      }
-      // 세로 임계값 도달 → 드래그 확정
-      if (dy > DRAG_THRESHOLD) {
-        pendingDrag.current.target.setPointerCapture(pendingDrag.current.pointerId);
-        setDragStart(pendingDrag.current.slot);
-        setDragEnd(pointerToSlot(e.clientY));
-        setIsDragging(true);
-        pendingDrag.current = null;
-      }
       return;
     }
     if (!isDragging) return;
@@ -156,7 +134,7 @@ export default function TimeBox({ date }: { date: string }) {
   }, [resize, isDragging, BLOCK_HEIGHT]);
 
   const onPointerUp = useCallback((e: React.PointerEvent) => {
-    // 리사이즈 완료
+    // 리사이즈 완료 (데스크톱 전용)
     if (resize) {
       const slot = pointerToSlot(e.clientY);
       let newStart = resize.originalStart;
@@ -170,15 +148,20 @@ export default function TimeBox({ date }: { date: string }) {
       setResize(null);
       return;
     }
-    // 모바일 대기 중 손 뗌 → 탭으로 처리 (1슬롯 블록 생성)
-    if (pendingDrag.current) {
-      const slot = pendingDrag.current.slot;
-      pendingDrag.current = null;
-      // 합성 mousedown/click 이벤트 방지 (모달이 즉시 닫히거나 카테고리 오선택 방지)
-      e.preventDefault();
-      setModal({ mode: 'create', startSlot: slot, endSlot: slot });
+    // 모바일: 손 뗄 때 이동 거리 작으면 탭으로 처리
+    if (isMobile && mobileTouch.current) {
+      const dx = Math.abs(e.clientX - mobileTouch.current.startX);
+      const dy = Math.abs(e.clientY - mobileTouch.current.startY);
+      const slot = mobileTouch.current.slot;
+      mobileTouch.current = null;
+      if (dx < 8 && dy < 8) {
+        // 합성 mousedown/click 이벤트 방지 (모달이 즉시 닫히거나 카테고리 오선택 방지)
+        e.preventDefault();
+        setModal({ mode: 'create', startSlot: slot, endSlot: slot });
+      }
       return;
     }
+    // 데스크톱 드래그 완료
     if (!isDragging || dragStart === null) return;
     setIsDragging(false);
     e.preventDefault(); // 합성 이벤트 방지
@@ -188,11 +171,10 @@ export default function TimeBox({ date }: { date: string }) {
     setModal({ mode: 'create', startSlot, endSlot });
     setDragStart(null);
     setDragEnd(null);
-  }, [resize, isDragging, dragStart, date, updateTimeBlock, BLOCK_HEIGHT]);
+  }, [resize, isMobile, isDragging, dragStart, date, updateTimeBlock, BLOCK_HEIGHT]);
 
-  // 모바일 대기 중 포인터 캔슬 (스크롤 발생 등)
   const onPointerCancel = useCallback(() => {
-    pendingDrag.current = null;
+    mobileTouch.current = null;
     setResize(null);
     if (isDragging) {
       setIsDragging(false);
@@ -204,18 +186,24 @@ export default function TimeBox({ date }: { date: string }) {
   const highlightStart = dragStart !== null && dragEnd !== null ? Math.min(dragStart, dragEnd) : null;
   const highlightEnd = dragStart !== null && dragEnd !== null ? Math.max(dragStart, dragEnd) : null;
 
-  function handleConfirm(label: string, color: BlockColor) {
+  // 리사이즈 미리보기 슬롯 계산
+  const resizePreview = resize
+    ? {
+        startSlot: resize.edge === 'top'
+          ? Math.min(resize.currentSlot, resize.originalEnd)
+          : resize.originalStart,
+        endSlot: resize.edge === 'bottom'
+          ? Math.max(resize.currentSlot, resize.originalStart)
+          : resize.originalEnd,
+      }
+    : null;
+
+  function handleConfirm(label: string, color: BlockColor, startSlot: number, endSlot: number) {
     if (!modal) return;
     if (modal.mode === 'create') {
-      addTimeBlock(date, {
-        startSlot: modal.startSlot,
-        endSlot: modal.endSlot,
-        label,
-        color,
-        column: 0,
-      });
+      addTimeBlock(date, { startSlot, endSlot, label, color, column: 0 });
     } else {
-      updateTimeBlock(date, modal.block.id, { label, color });
+      updateTimeBlock(date, modal.block.id, { label, color, startSlot, endSlot });
     }
     setModal(null);
   }
@@ -265,7 +253,7 @@ export default function TimeBox({ date }: { date: string }) {
           <div
             ref={gridRef}
             className="absolute top-0 bottom-0 right-0 no-select"
-            style={{ left: 48, touchAction: isMobile && !isDragging ? 'pan-y' : 'none' }}
+            style={{ left: 48, touchAction: isMobile ? 'pan-y' : (isDragging ? 'none' : 'auto') }}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
@@ -322,6 +310,9 @@ export default function TimeBox({ date }: { date: string }) {
                 block={block}
                 blockHeight={BLOCK_HEIGHT}
                 onClick={() => setModal({ mode: 'edit', block })}
+                onResizeStart={onResizeStart}
+                resizePreview={resize?.blockId === block.id ? resizePreview : null}
+                isMobile={isMobile}
               />
             ))}
           </div>
@@ -369,33 +360,77 @@ function BlockItem({
   block,
   blockHeight,
   onClick,
+  onResizeStart,
+  resizePreview,
+  isMobile,
 }: {
   block: TimeBlock;
   blockHeight: number;
   onClick: () => void;
+  onResizeStart: (e: React.PointerEvent, blockId: string, edge: 'top' | 'bottom') => void;
+  resizePreview: { startSlot: number; endSlot: number } | null;
+  isMobile: boolean;
 }) {
   const isDark = useIsDark();
   const palette = isDark ? accentColorMap.dark : accentColorMap.light;
   const accent = palette[block.color] ?? palette.blue;
+
+  const displayStart = resizePreview?.startSlot ?? block.startSlot;
+  const displayEnd = resizePreview?.endSlot ?? block.endSlot;
+  const isResizing = resizePreview !== null;
+
   return (
     <div
       data-block
-      className="absolute w-full rounded-md cursor-pointer overflow-hidden flex items-center"
+      className="absolute w-full rounded-md overflow-hidden"
       style={{
-        top: block.startSlot * blockHeight + 1,
-        height: (block.endSlot - block.startSlot + 1) * blockHeight - 2,
+        top: displayStart * blockHeight + 1,
+        height: (displayEnd - displayStart + 1) * blockHeight - 2,
         background: accent.bg,
         borderLeft: `3px solid ${accent.bar}`,
         color: accent.text,
         fontSize: blockHeight > 30 ? 13 : 11,
         fontWeight: 600,
-        paddingLeft: 8,
-        paddingRight: 4,
-        zIndex: 10,
+        zIndex: isResizing ? 20 : 10,
+        opacity: isResizing ? 0.85 : 1,
+        cursor: 'pointer',
       }}
       onClick={onClick}
     >
-      <span className="truncate">{block.label}</span>
+      {/* 상단 리사이즈 핸들 (데스크톱 전용) */}
+      {!isMobile && (
+        <div
+          className="absolute top-0 left-0 w-full flex items-center justify-center"
+          style={{ height: 8, cursor: 'ns-resize', zIndex: 2 }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onResizeStart(e, block.id, 'top');
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div style={{ width: 24, height: 2, borderRadius: 1, background: accent.bar, opacity: 0.5 }} />
+        </div>
+      )}
+
+      {/* 레이블 */}
+      <div className="flex items-center h-full" style={{ paddingLeft: 8, paddingRight: 4, paddingTop: 8, paddingBottom: 8 }}>
+        <span className="truncate">{block.label}</span>
+      </div>
+
+      {/* 하단 리사이즈 핸들 (데스크톱 전용) */}
+      {!isMobile && (
+        <div
+          className="absolute bottom-0 left-0 w-full flex items-center justify-center"
+          style={{ height: 8, cursor: 'ns-resize', zIndex: 2 }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onResizeStart(e, block.id, 'bottom');
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div style={{ width: 24, height: 2, borderRadius: 1, background: accent.bar, opacity: 0.5 }} />
+        </div>
+      )}
     </div>
   );
 }
