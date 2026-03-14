@@ -3,8 +3,9 @@
 import { useDiaryStore } from '@/store/diaryStore';
 
 export default function BrainDump({ date }: { date: string }) {
-  const { diaries, addBrainItem, updateBrainItem, toggleBrainItem, removeBrainItem } = useDiaryStore();
-  const items = diaries[date]?.brainDump ?? [];
+  const { diaries, getOrCreate, addBrainItem, updateBrainItem, toggleBrainItem, removeBrainItem } = useDiaryStore();
+  const diary = diaries[date] ?? getOrCreate(date);
+  const items = diary.brainDump;
   const checked = items.filter((i) => i.checked).length;
   const total = items.length;
 
