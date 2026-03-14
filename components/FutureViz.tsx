@@ -64,7 +64,7 @@ export default function FutureViz({ date }: { date: string }) {
       </div>
 
       {/* Image area */}
-      <div className="rounded-lg w-full bg-slate-100 mb-3 overflow-hidden relative min-h-[128px]">
+      <div className="rounded-lg w-full bg-white mb-3 overflow-hidden relative min-h-[128px]">
         {image ? (
           <div className="relative group">
             <img

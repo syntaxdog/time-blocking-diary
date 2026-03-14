@@ -229,7 +229,7 @@ export default function TimeBox({ date }: { date: string }) {
         <p className="text-xs text-slate-400">드래그로 시간 블록을 만드세요</p>
       </div>
 
-      <div className="px-4 pb-4 overflow-y-auto flex-1 max-h-[800px]">
+      <div className="px-4 pb-4 overflow-y-auto flex-1 max-h-[830px]">
         <div className="relative" style={{ height: TOTAL_SLOTS * BLOCK_HEIGHT }}>
           {/* 시간 레이블 (absolute) */}
           {Array.from({ length: TOTAL_SLOTS }).map((_, i) =>
