@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useSession } from 'next-auth/react';
 import Header from '@/components/Header';
 import { useDiaryStore } from '@/store/diaryStore';
 
@@ -8,6 +9,7 @@ import Sidebar from '@/components/Sidebar';
 import MobileNav from '@/components/MobileNav';
 
 export default function StatisticsPage() {
+  const { data: session } = useSession();
   const { diaries } = useDiaryStore();
 
   // Get current week's dates (Mon-Sun)
@@ -187,7 +189,7 @@ export default function StatisticsPage() {
           {/* Welcome Banner */}
           <div className="bg-gradient-to-r from-[var(--color-primary)] to-blue-500 p-6 rounded-2xl text-white shadow-lg">
             <h2 className="text-sm font-medium opacity-80 mb-1">생산성 분석</h2>
-            <p className="text-2xl font-bold">안녕하세요, 사용자님!</p>
+            <p className="text-2xl font-bold">안녕하세요, {session?.user?.name ?? '사용자'}님!</p>
             <p className="text-sm opacity-80 mt-1">
               {totalEntries > 0
                 ? `총 ${totalEntries}일의 기록이 있습니다. 목표 달성률은 ${goalRate}%입니다.`
