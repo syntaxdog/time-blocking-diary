@@ -70,7 +70,7 @@ export default function FutureViz({ date }: { date: string }) {
             <img
               src={image}
               alt="미래 시각화"
-              className="w-full h-auto max-h-64 object-cover rounded-lg"
+              className="w-full h-auto max-h-64 object-contain rounded-lg"
             />
             <button
               onClick={handleRemoveImage}
