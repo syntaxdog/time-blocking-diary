@@ -122,21 +122,47 @@ export default function TimeBox({ date }: { date: string }) {
     }
   }, [isMobile, BLOCK_HEIGHT]);
 
+  // 리사이즈 시 다른 블록과 겹치지 않도록 슬롯 제한
+  const clampResizeSlot = useCallback((slot: number, blockId: string, edge: 'top' | 'bottom', originalStart: number, originalEnd: number) => {
+    const others = timeBlocks.filter((b) => b.id !== blockId);
+    if (edge === 'top') {
+      // 위로 늘릴 때: 바로 위 블록의 endSlot + 1 이하로 못 감
+      let minSlot = 0;
+      for (const b of others) {
+        if (b.endSlot < originalEnd && b.endSlot >= minSlot) {
+          minSlot = b.endSlot + 1;
+        }
+      }
+      return Math.max(slot, minSlot);
+    } else {
+      // 아래로 늘릴 때: 바로 아래 블록의 startSlot - 1 이상으로 못 감
+      let maxSlot = TOTAL_SLOTS - 1;
+      for (const b of others) {
+        if (b.startSlot > originalStart && b.startSlot <= maxSlot + 1) {
+          maxSlot = b.startSlot - 1;
+        }
+      }
+      return Math.min(slot, maxSlot);
+    }
+  }, [timeBlocks]);
+
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     // 리사이즈 중 (데스크톱 전용)
     if (resize) {
-      const slot = pointerToSlot(e.clientY);
-      setResize((prev) => prev ? { ...prev, currentSlot: slot } : null);
+      const rawSlot = pointerToSlot(e.clientY);
+      const clampedSlot = clampResizeSlot(rawSlot, resize.blockId, resize.edge, resize.originalStart, resize.originalEnd);
+      setResize((prev) => prev ? { ...prev, currentSlot: clampedSlot } : null);
       return;
     }
     if (!isDragging) return;
     setDragEnd(pointerToSlot(e.clientY));
-  }, [resize, isDragging, BLOCK_HEIGHT]);
+  }, [resize, isDragging, BLOCK_HEIGHT, clampResizeSlot]);
 
   const onPointerUp = useCallback((e: React.PointerEvent) => {
     // 리사이즈 완료 (데스크톱 전용)
     if (resize) {
-      const slot = pointerToSlot(e.clientY);
+      const rawSlot = pointerToSlot(e.clientY);
+      const slot = clampResizeSlot(rawSlot, resize.blockId, resize.edge, resize.originalStart, resize.originalEnd);
       let newStart = resize.originalStart;
       let newEnd = resize.originalEnd;
       if (resize.edge === 'top') {
@@ -171,7 +197,7 @@ export default function TimeBox({ date }: { date: string }) {
     setModal({ mode: 'create', startSlot, endSlot });
     setDragStart(null);
     setDragEnd(null);
-  }, [resize, isMobile, isDragging, dragStart, date, updateTimeBlock, BLOCK_HEIGHT]);
+  }, [resize, isMobile, isDragging, dragStart, date, updateTimeBlock, BLOCK_HEIGHT, clampResizeSlot]);
 
   const onPointerCancel = useCallback(() => {
     mobileTouch.current = null;
