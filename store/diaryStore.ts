@@ -38,7 +38,11 @@ function emptyDiary(date: string): DiaryData {
       { text: '', checked: false },
       { text: '', checked: false },
     ],
-    brainDump: [],
+    brainDump: [
+      { id: uid(), text: '', checked: false },
+      { id: uid(), text: '', checked: false },
+      { id: uid(), text: '', checked: false },
+    ],
     timeBlocks: [],
     feedback: { morning: '', midday: '', evening: '' },
     futureViz: '',

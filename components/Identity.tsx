@@ -13,7 +13,7 @@ export default function Identity({ date }: { date: string }) {
         <h2 className="font-bold text-slate-800">정체성 (Identity)</h2>
       </div>
       <textarea
-        className="w-full ruled-lines min-h-[100px] text-sm text-slate-600 resize-none bg-transparent border-none focus:ring-0 p-0 outline-none"
+        className="w-full ruled-lines min-h-[120px] text-sm text-slate-600 resize-none bg-transparent border-none focus:ring-0 p-0 outline-none"
         placeholder="나는 어떤 사람인가? 나의 정체성을 기록하세요."
         maxLength={200}
         value={diary?.identity ?? ''}

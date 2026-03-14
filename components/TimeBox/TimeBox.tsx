@@ -279,7 +279,8 @@ export default function TimeBox({ date }: { date: string }) {
               const slots = highlightEnd - highlightStart + 1;
               const top = highlightStart * BLOCK_HEIGHT;
               const height = slots * BLOCK_HEIGHT;
-              const labelAbove = slots <= 2;
+              const labelAbove = slots <= 2 && top >= 28;
+              const labelBelow = slots <= 2 && top < 28;
               return (
                 <>
                   {/* 배경 오버레이 */}
@@ -290,7 +291,7 @@ export default function TimeBox({ date }: { date: string }) {
                   {/* 시간 레이블 */}
                   <div
                     className="absolute left-0 w-full flex flex-col items-center pointer-events-none select-none"
-                    style={{ top: labelAbove ? top - 28 : top, height: labelAbove ? 28 : height, justifyContent: 'center', display: 'flex', flexDirection: 'column' }}
+                    style={{ top: labelAbove ? top - 28 : labelBelow ? top + height : top, height: (labelAbove || labelBelow) ? 28 : height, justifyContent: 'center', display: 'flex', flexDirection: 'column' }}
                   >
                     <span className="text-[var(--color-primary)] font-bold text-xs leading-tight">
                       {slotToTime(highlightStart)} ~ {slotToTime(highlightEnd + 1)}
