@@ -174,11 +174,14 @@ export default function TimeBox({ date }: { date: string }) {
     if (pendingDrag.current) {
       const slot = pendingDrag.current.slot;
       pendingDrag.current = null;
+      // 합성 mousedown/click 이벤트 방지 (모달이 즉시 닫히거나 카테고리 오선택 방지)
+      e.preventDefault();
       setModal({ mode: 'create', startSlot: slot, endSlot: slot });
       return;
     }
     if (!isDragging || dragStart === null) return;
     setIsDragging(false);
+    e.preventDefault(); // 합성 이벤트 방지
     const end = pointerToSlot(e.clientY);
     const startSlot = Math.min(dragStart, end);
     const endSlot = Math.max(dragStart, end);
