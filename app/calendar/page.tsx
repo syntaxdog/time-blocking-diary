@@ -23,6 +23,7 @@ export default function CalendarPage() {
   const [selectedDay, setSelectedDay] = useState(todayDate);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
+  const [showAllSchedule, setShowAllSchedule] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
   // Close search dropdown on outside click
@@ -280,7 +281,7 @@ export default function CalendarPage() {
                   return (
                     <div
                       key={day}
-                      onClick={() => setSelectedDay(day)}
+                      onClick={() => { setSelectedDay(day); setShowAllSchedule(false); }}
                       className={`min-h-[60px] md:min-h-[100px] p-1.5 md:p-2 flex flex-col items-start border-r border-b border-slate-100 cursor-pointer transition-colors ${isSelected ? 'bg-[var(--color-primary)]/5' : 'hover:bg-slate-50'
                         }`}
                     >
@@ -368,7 +369,7 @@ export default function CalendarPage() {
                 <div className="space-y-3">
                   {scheduleItems.length > 0 ? (
                     <>
-                      {scheduleItems.slice(0, 3).map((item, idx) => (
+                      {(showAllSchedule ? scheduleItems : scheduleItems.slice(0, 3)).map((item, idx) => (
                         <div key={idx} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex gap-4 items-start">
                           <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${item.color === 'red' ? 'bg-red-100 text-red-600' :
                               item.color === 'green' ? 'bg-green-100 text-green-600' :
@@ -386,10 +387,10 @@ export default function CalendarPage() {
                       ))}
                       {scheduleItems.length > 3 && (
                         <button
-                          onClick={() => goToDiary(selectedDay)}
-                          className="text-xs text-slate-400 font-medium hover:text-slate-600 hover:underline transition-colors text-center py-1"
+                          onClick={() => setShowAllSchedule((v) => !v)}
+                          className="text-xs text-slate-400 font-medium hover:text-slate-600 hover:underline transition-colors text-center py-1 w-full"
                         >
-                          +{scheduleItems.length - 3}개 더보기
+                          {showAllSchedule ? '접기' : `+${scheduleItems.length - 3}개 더보기`}
                         </button>
                       )}
                     </>
