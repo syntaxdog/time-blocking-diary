@@ -63,11 +63,15 @@ export default function TimeBox({ date }: { date: string }) {
   const isDark = useIsDark();
   const isMobile = useIsMobile();
   const BLOCK_HEIGHT = isMobile ? BLOCK_HEIGHT_MOBILE : BLOCK_HEIGHT_DESKTOP;
-  const { diaries, addTimeBlock, updateTimeBlock, removeTimeBlock } = useDiaryStore();
+  const { diaries, addTimeBlock, updateTimeBlock, removeTimeBlock, timeBoxStartHour: globalStartHour, setDayStartHour } = useDiaryStore();
   const timeBlocks = diaries[date]?.timeBlocks ?? [];
   const big3Suggestions = (diaries[date]?.bigThree ?? [])
     .map((b) => b.text.trim())
     .filter(Boolean);
+
+  // 날짜별 오버라이드 > 글로벌 기본값
+  const startHour = diaries[date]?.timeBoxStartHour ?? globalStartHour;
+  const [showStartHourPicker, setShowStartHourPicker] = useState(false);
 
   const [dragStart, setDragStart] = useState<number | null>(null);
   const [dragEnd, setDragEnd] = useState<number | null>(null);
@@ -75,6 +79,19 @@ export default function TimeBox({ date }: { date: string }) {
   const [modal, setModal] = useState<ModalState | null>(null);
   const [resize, setResize] = useState<ResizeState | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
+
+  // 피커 외부 클릭 시 닫기
+  useEffect(() => {
+    if (!showStartHourPicker) return;
+    const handler = (e: MouseEvent) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+        setShowStartHourPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showStartHourPicker]);
 
   // 모바일 탭 감지용 (드래그 없음 — 스크롤 충돌 방지)
   const mobileTouch = useRef<{ startY: number; startX: number; slot: number } | null>(null);
@@ -248,7 +265,43 @@ export default function TimeBox({ date }: { date: string }) {
           <span className="material-symbols-outlined text-[var(--color-primary)] text-xl">schedule</span>
           <h2 className="font-bold text-slate-800">타임박스 (Time Box)</h2>
         </div>
-        <span className="text-[10px] font-bold bg-slate-100 px-2 py-1 rounded">30-min Intervals</span>
+        <div className="flex items-center gap-2">
+          {/* 시작시간 설정 버튼 */}
+          <div className="relative" ref={pickerRef}>
+            <button
+              onClick={() => setShowStartHourPicker((v) => !v)}
+              className="flex items-center gap-1 text-[10px] font-bold bg-slate-100 px-2 py-1 rounded hover:bg-slate-200 transition-colors"
+              title="타임박스 시작시간 변경"
+            >
+              <span className="material-symbols-outlined text-sm">alarm</span>
+              {String(startHour).padStart(2, '0')}:00~
+            </button>
+            {showStartHourPicker && (
+              <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 p-2 w-48 max-h-60 overflow-y-auto">
+                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1 px-1">시작시간 (이 날짜)</p>
+                <div className="grid grid-cols-4 gap-1">
+                  {Array.from({ length: 24 }).map((_, h) => (
+                    <button
+                      key={h}
+                      onClick={() => {
+                        setDayStartHour(date, h);
+                        setShowStartHourPicker(false);
+                      }}
+                      className={`text-xs py-1.5 rounded font-medium transition-colors ${
+                        h === startHour
+                          ? 'bg-[var(--color-primary)] text-white'
+                          : 'hover:bg-slate-100 text-slate-600'
+                      }`}
+                    >
+                      {String(h).padStart(2, '0')}시
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          <span className="text-[10px] font-bold bg-slate-100 px-2 py-1 rounded">30-min</span>
+        </div>
       </div>
 
       <div className="px-4 py-2">
@@ -270,7 +323,7 @@ export default function TimeBox({ date }: { date: string }) {
                   fontWeight: 600,
                   fontVariantNumeric: 'tabular-nums',
                 }}>
-                {slotToTime(i)}
+                {slotToTime(i, startHour)}
               </div>
             ) : null
           )}
@@ -320,7 +373,7 @@ export default function TimeBox({ date }: { date: string }) {
                     style={{ top: labelAbove ? top - 28 : labelBelow ? top + height : top, height: (labelAbove || labelBelow) ? 28 : height, justifyContent: 'center', display: 'flex', flexDirection: 'column' }}
                   >
                     <span className="text-[var(--color-primary)] font-bold text-xs leading-tight">
-                      {slotToTime(highlightStart)} ~ {slotToTime(highlightEnd + 1)}
+                      {slotToTime(highlightStart, startHour)} ~ {slotToTime(highlightEnd + 1, startHour)}
                     </span>
                     <span className="text-[var(--color-primary)] text-[10px] mt-0.5 opacity-70">
                       {formatDuration(slots)}
@@ -356,6 +409,7 @@ export default function TimeBox({ date }: { date: string }) {
           existing={modal.mode === 'edit' ? { label: modal.block.label, color: modal.block.color } : undefined}
           onDelete={modal.mode === 'edit' ? handleDelete : undefined}
           suggestions={modal.mode === 'create' ? big3Suggestions : undefined}
+          startHour={startHour}
         />
       )}
     </section>

@@ -1,6 +1,6 @@
-// 슬롯 번호 → 시간 문자열 (0 → "04:00", 1 → "04:30", ... 47 → "03:30")
-export function slotToTime(slot: number): string {
-  const totalMinutes = (4 * 60 + slot * 30) % (24 * 60);
+// 슬롯 번호 → 시간 문자열 (startHour 기준, 기본 4시)
+export function slotToTime(slot: number, startHour: number = 4): string {
+  const totalMinutes = (startHour * 60 + slot * 30) % (24 * 60);
   const h = Math.floor(totalMinutes / 60);
   const m = totalMinutes % 60;
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;

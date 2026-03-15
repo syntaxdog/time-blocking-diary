@@ -102,6 +102,13 @@ type DiaryStore = {
   userVision: string;
   setUserVision: (vision: string) => void;
 
+  // 타임박스 시작시간 (글로벌 기본값)
+  timeBoxStartHour: number;
+  setTimeBoxStartHour: (hour: number) => void;
+
+  // 날짜별 타임박스 시작시간 오버라이드
+  setDayStartHour: (date: string, hour: number | undefined) => void;
+
   // DB 동기화
   loadFromDb: () => Promise<void>;
   _dbLoaded: boolean;
@@ -116,6 +123,18 @@ export const useDiaryStore = create<DiaryStore>()(
       currentDate: today(),
       theme: 'light' as ThemeMode,
       userVision: '나는 매일매일 성장하는 사람이다.',
+
+      timeBoxStartHour: 4,
+      setTimeBoxStartHour: (hour) => set({ timeBoxStartHour: hour }),
+      setDayStartHour: (date, hour) => {
+        set((s) => {
+          const diary = s.diaries[date] ?? emptyDiary(date);
+          return {
+            diaries: { ...s.diaries, [date]: { ...diary, timeBoxStartHour: hour, updatedAt: Date.now() } },
+          };
+        });
+        withSync(date, get);
+      },
 
       setTheme: (mode) => set({ theme: mode }),
       setUserVision: (vision) => set({ userVision: vision }),

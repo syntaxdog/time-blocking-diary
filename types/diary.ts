@@ -38,5 +38,6 @@ export type DiaryData = {
   motivation: string;
   gratitude: [string, string, string];
   morningRoutine: string;
+  timeBoxStartHour?: number; // 날짜별 타임박스 시작시간 오버라이드 (0-23)
   updatedAt?: number; // ms timestamp – last modification time
 };

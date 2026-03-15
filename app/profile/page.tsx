@@ -11,7 +11,7 @@ type SettingsTab = 'info' | 'theme' | 'security';
 
 export default function ProfilePage() {
   const { data: session, update: updateSession } = useSession();
-  const { theme, setTheme, userVision, setUserVision } = useDiaryStore();
+  const { theme, setTheme, userVision, setUserVision, timeBoxStartHour, setTimeBoxStartHour } = useDiaryStore();
   const userName = session?.user?.name || '사용자';
   const userInitial = userName.charAt(0);
   const userImage = session?.user?.image;
@@ -201,6 +201,30 @@ export default function ProfilePage() {
                           onChange={(e) => setUserVision(e.target.value)}
                         />
                       </label>
+                    </div>
+                  </section>
+
+                  {/* 타임박스 시작시간 글로벌 설정 */}
+                  <section className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="material-symbols-outlined text-[var(--color-primary)]">alarm</span>
+                      <h3 className="text-lg font-bold">타임박스 시작시간</h3>
+                    </div>
+                    <p className="text-sm text-slate-500 mb-4">타임박스의 기본 시작시간을 설정합니다. 날짜별로 개별 변경도 가능합니다.</p>
+                    <div className="grid grid-cols-6 sm:grid-cols-8 gap-2">
+                      {Array.from({ length: 24 }).map((_, h) => (
+                        <button
+                          key={h}
+                          onClick={() => setTimeBoxStartHour(h)}
+                          className={`py-2 rounded-lg text-sm font-medium transition-colors ${
+                            h === timeBoxStartHour
+                              ? 'bg-[var(--color-primary)] text-white'
+                              : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
+                          }`}
+                        >
+                          {String(h).padStart(2, '0')}시
+                        </button>
+                      ))}
                     </div>
                   </section>
                 </>

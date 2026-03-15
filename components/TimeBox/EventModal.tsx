@@ -22,9 +22,10 @@ type Props = {
   existing?: Pick<TimeBlock, 'label' | 'color'>;
   onDelete?: () => void;
   suggestions?: string[];
+  startHour?: number;
 };
 
-export default function EventModal({ startSlot, endSlot, onConfirm, onCancel, existing, onDelete, suggestions }: Props) {
+export default function EventModal({ startSlot, endSlot, onConfirm, onCancel, existing, onDelete, suggestions, startHour = 4 }: Props) {
   const [label, setLabel] = useState(existing?.label ?? '');
   const [color, setColor] = useState<BlockColor>(existing?.color ?? 'blue');
   const [localStart, setLocalStart] = useState(startSlot);
@@ -78,9 +79,9 @@ export default function EventModal({ startSlot, endSlot, onConfirm, onCancel, ex
 
         {/* 시간 조정 */}
         <div className="flex flex-col gap-2 rounded-xl p-3" style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)' }}>
-          <TimeRow label="시작" time={slotToTime(localStart)} onMinus={() => adjustStart(-1)} onPlus={() => adjustStart(1)} disableMinus={localStart <= 0} disablePlus={localStart >= localEnd} />
+          <TimeRow label="시작" time={slotToTime(localStart, startHour)} onMinus={() => adjustStart(-1)} onPlus={() => adjustStart(1)} disableMinus={localStart <= 0} disablePlus={localStart >= localEnd} />
           <div style={{ height: 1, background: 'var(--color-border)' }} />
-          <TimeRow label="종료" time={slotToTime(localEnd + 1)} onMinus={() => adjustEnd(-1)} onPlus={() => adjustEnd(1)} disableMinus={localEnd <= localStart} disablePlus={localEnd >= TOTAL_SLOTS - 1} />
+          <TimeRow label="종료" time={slotToTime(localEnd + 1, startHour)} onMinus={() => adjustEnd(-1)} onPlus={() => adjustEnd(1)} disableMinus={localEnd <= localStart} disablePlus={localEnd >= TOTAL_SLOTS - 1} />
         </div>
 
         {/* 일정명 */}
