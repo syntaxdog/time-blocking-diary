@@ -314,7 +314,7 @@ export default function TimeBox({ date }: { date: string }) {
 
       <div className="px-4 pb-4 overflow-y-auto flex-1 max-h-[830px]">
         <div className="relative" style={{ height: TOTAL_SLOTS * BLOCK_HEIGHT }}>
-          {/* 시간 레이블 (absolute) */}
+          {/* 시간 레이블 (absolute, 격자선에 걸침) */}
           {Array.from({ length: TOTAL_SLOTS }).map((_, i) =>
             i % 2 === 0 ? (
               <div key={`t${i}`} className="absolute left-0 text-right pr-2"
@@ -322,7 +322,7 @@ export default function TimeBox({ date }: { date: string }) {
                   top: i * BLOCK_HEIGHT,
                   width: 44,
                   fontSize: isMobile ? 11 : 10,
-                  lineHeight: `${BLOCK_HEIGHT}px`,
+                  transform: 'translateY(-50%)',
                   color: 'var(--color-muted)',
                   fontWeight: 600,
                   fontVariantNumeric: 'tabular-nums',

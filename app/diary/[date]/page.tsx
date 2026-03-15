@@ -24,6 +24,11 @@ export default function DiaryPage({ params }: { params: Promise<{ date: string }
   const dayOfWeek = dateObj.getDay();
   const monthDay = `${dateObj.getMonth() + 1}월 ${dateObj.getDate()}일`;
 
+  // Check if current date is today
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const isToday = date === todayStr;
+
   // Week day buttons
   const weekDays = ['월', '화', '수', '목', '금', '토', '일'];
   const currentDayIdx = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Mon=0 to Sun=6
@@ -47,6 +52,14 @@ export default function DiaryPage({ params }: { params: Promise<{ date: string }
             </div>
           </div>
           <div className="flex gap-2 shrink-0">
+            {!isToday && (
+              <button
+                onClick={() => router.push(`/diary/${todayStr}`)}
+                className="px-3 py-2 rounded-lg bg-[var(--color-primary)] text-white text-xs md:text-sm font-bold hover:opacity-90 transition-opacity"
+              >
+                오늘
+              </button>
+            )}
             <button
               onClick={() => router.push(`/diary/${addDays(date, -1)}`)}
               className="p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
