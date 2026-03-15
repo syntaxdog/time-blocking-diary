@@ -42,9 +42,14 @@ export default function DiaryPage({ params }: { params: Promise<{ date: string }
           <div className="flex items-center gap-3 md:gap-4">
             <button
               onClick={() => router.push('/')}
-              className="bg-[var(--color-primary)] p-2 rounded-lg text-white hover:opacity-90 transition-opacity shrink-0"
+              className="w-9 h-9 bg-gradient-to-tr from-[var(--color-primary)] via-indigo-500 to-fuchsia-500 rounded-[12px] flex items-center justify-center text-white shadow-md border-[0.5px] border-white/20 shrink-0 transform -rotate-2 hover:rotate-3 transition-transform duration-300"
             >
-              <span className="material-symbols-outlined text-xl md:text-2xl">event_note</span>
+              <svg className="w-5 h-5 drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="4" y="4" width="7" height="6" rx="2" opacity="0.9" />
+                <rect x="4" y="12" width="7" height="8" rx="2" opacity="0.5" />
+                <rect x="13" y="4" width="7" height="10" rx="2" opacity="1" />
+                <rect x="13" y="16" width="7" height="4" rx="1.5" opacity="0.75" />
+              </svg>
             </button>
             <div>
               <h1 className="text-2xl md:text-3xl font-black tracking-tight">{monthDay}</h1>
