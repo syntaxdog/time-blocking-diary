@@ -158,6 +158,12 @@ body {
   -webkit-user-select: none;
 }
 
+/* 타임블록 밀림 애니메이션 (Apple 스타일) */
+[data-block-id] {
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform;
+}
+
 /* Ruled lines effect for text areas */
 .ruled-lines {
   background-image: repeating-linear-gradient(

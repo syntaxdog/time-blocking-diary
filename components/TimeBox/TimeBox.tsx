@@ -59,6 +59,15 @@ type ResizeState = {
   currentSlot: number;
 };
 
+type MoveState = {
+  blockId: string;
+  blockSize: number;
+  originalStartSlot: number;
+  originalEndSlot: number;
+  grabOffsetSlots: number;
+  currentTopSlot: number;
+};
+
 export default function TimeBox({ date }: { date: string }) {
   const isDark = useIsDark();
   const isMobile = useIsMobile();
@@ -78,8 +87,12 @@ export default function TimeBox({ date }: { date: string }) {
   const [isDragging, setIsDragging] = useState(false);
   const [modal, setModal] = useState<ModalState | null>(null);
   const [resize, setResize] = useState<ResizeState | null>(null);
+  const [moveState, setMoveState] = useState<MoveState | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressOrigin = useRef<{ x: number; y: number; blockId: string; pointerId: number } | null>(null);
+  const displacementMap = useRef<Map<string, number>>(new Map());
 
   // 피커 외부 클릭 시 닫기
   useEffect(() => {
@@ -163,7 +176,124 @@ export default function TimeBox({ date }: { date: string }) {
     }
   }, [timeBlocks]);
 
+  // 밀림 알고리즘: 드래그 블록 위치 기준으로 겹치는 블록을 위/아래로 밀기
+  const calculateDisplacement = useCallback((
+    dragStart: number, dragEnd: number, draggedId: string,
+  ) => {
+    const others = timeBlocks
+      .filter((b) => b.id !== draggedId)
+      .sort((a, b) => a.startSlot - b.startSlot);
+
+    const newDisplacements = new Map<string, number>();
+
+    for (const block of others) {
+      const overlaps = block.startSlot <= dragEnd && block.endSlot >= dragStart;
+      if (!overlaps) {
+        newDisplacements.set(block.id, 0);
+        continue;
+      }
+
+      const blockCenter = (block.startSlot + block.endSlot) / 2;
+      const dragCenter = (dragStart + dragEnd) / 2;
+
+      let pushSlots: number;
+      if (blockCenter <= dragCenter) {
+        // 위로 밀기
+        pushSlots = dragStart - block.endSlot - 1;
+      } else {
+        // 아래로 밀기
+        pushSlots = dragEnd - block.startSlot + 1;
+      }
+
+      // 경계 클램핑
+      const newStart = block.startSlot + pushSlots;
+      const newEnd = block.endSlot + pushSlots;
+      if (newStart < 0) pushSlots -= newStart;
+      if (newEnd > TOTAL_SLOTS - 1) pushSlots -= (newEnd - (TOTAL_SLOTS - 1));
+
+      newDisplacements.set(block.id, pushSlots * BLOCK_HEIGHT);
+    }
+
+    // DOM 직접 조작 (리렌더 없이 애니메이션)
+    for (const [blockId, offset] of newDisplacements) {
+      const el = gridRef.current?.querySelector(`[data-block-id="${blockId}"]`) as HTMLElement;
+      if (el) {
+        el.style.transform = offset === 0 ? '' : `translateY(${offset}px)`;
+      }
+    }
+
+    displacementMap.current = newDisplacements;
+  }, [timeBlocks, BLOCK_HEIGHT]);
+
+  // 블록 위 pointerDown → 롱프레스 감지 시작
+  const onBlockPointerDown = useCallback((e: React.PointerEvent, blockId: string) => {
+    // 리사이즈 핸들이면 무시
+    if ((e.target as HTMLElement).closest('[data-resize-handle]')) return;
+    e.stopPropagation();
+
+    longPressOrigin.current = {
+      x: e.clientX, y: e.clientY, blockId, pointerId: e.pointerId,
+    };
+
+    longPressTimer.current = setTimeout(() => {
+      const block = timeBlocks.find((b) => b.id === blockId);
+      if (!block || !longPressOrigin.current) return;
+
+      const slot = pointerToSlot(longPressOrigin.current.y);
+      const grabOffset = Math.max(0, slot - block.startSlot);
+
+      // 햅틱 피드백
+      if (navigator.vibrate) navigator.vibrate(50);
+
+      // 포인터 캡처
+      gridRef.current?.setPointerCapture(longPressOrigin.current.pointerId);
+
+      setMoveState({
+        blockId,
+        blockSize: block.endSlot - block.startSlot + 1,
+        originalStartSlot: block.startSlot,
+        originalEndSlot: block.endSlot,
+        grabOffsetSlots: grabOffset,
+        currentTopSlot: block.startSlot,
+      });
+    }, 300);
+  }, [timeBlocks, BLOCK_HEIGHT]);
+
   const onPointerMove = useCallback((e: React.PointerEvent) => {
+    // 롱프레스 대기 중: 이동 거리 크면 취소
+    if (longPressOrigin.current && !moveState) {
+      const dx = Math.abs(e.clientX - longPressOrigin.current.x);
+      const dy = Math.abs(e.clientY - longPressOrigin.current.y);
+      if (dx > 5 || dy > 5) {
+        if (longPressTimer.current) clearTimeout(longPressTimer.current);
+        longPressTimer.current = null;
+        longPressOrigin.current = null;
+      }
+      return;
+    }
+
+    // 이동 모드
+    if (moveState) {
+      const rawSlot = pointerToSlot(e.clientY);
+      const newTopSlot = Math.max(0, Math.min(TOTAL_SLOTS - moveState.blockSize, rawSlot - moveState.grabOffsetSlots));
+
+      // 드래그 블록 DOM 직접 조작
+      const draggedEl = gridRef.current?.querySelector(`[data-block-id="${moveState.blockId}"]`) as HTMLElement;
+      if (draggedEl) {
+        const deltaPixels = (newTopSlot - moveState.originalStartSlot) * BLOCK_HEIGHT;
+        draggedEl.style.transform = `translateY(${deltaPixels}px) scale(1.03)`;
+        draggedEl.style.zIndex = '50';
+        draggedEl.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        draggedEl.style.opacity = '0.9';
+        draggedEl.style.transition = 'box-shadow 0.2s ease, opacity 0.2s ease';
+      }
+
+      // 다른 블록 밀림 계산
+      calculateDisplacement(newTopSlot, newTopSlot + moveState.blockSize - 1, moveState.blockId);
+      setMoveState((prev) => prev ? { ...prev, currentTopSlot: newTopSlot } : null);
+      return;
+    }
+
     // 리사이즈 중 (데스크톱 전용)
     if (resize) {
       const rawSlot = pointerToSlot(e.clientY);
@@ -173,9 +303,70 @@ export default function TimeBox({ date }: { date: string }) {
     }
     if (!isDragging) return;
     setDragEnd(pointerToSlot(e.clientY));
-  }, [resize, isDragging, BLOCK_HEIGHT, clampResizeSlot]);
+  }, [resize, isDragging, moveState, BLOCK_HEIGHT, clampResizeSlot, calculateDisplacement]);
 
   const onPointerUp = useCallback((e: React.PointerEvent) => {
+    // 롱프레스 타이머 취소
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+
+    // 롱프레스 대기 중 짧은 탭 → 편집 모달
+    if (longPressOrigin.current && !moveState) {
+      const blockId = longPressOrigin.current.blockId;
+      longPressOrigin.current = null;
+      const block = timeBlocks.find((b) => b.id === blockId);
+      if (block) {
+        e.preventDefault();
+        setModal({ mode: 'edit', block });
+      }
+      return;
+    }
+
+    // 이동 모드 드롭
+    if (moveState) {
+      const rawSlot = pointerToSlot(e.clientY);
+      const finalTopSlot = Math.max(0, Math.min(TOTAL_SLOTS - moveState.blockSize, rawSlot - moveState.grabOffsetSlots));
+      const finalEndSlot = finalTopSlot + moveState.blockSize - 1;
+
+      // 모든 DOM 스타일 초기화
+      const allBlockEls = gridRef.current?.querySelectorAll('[data-block-id]');
+      allBlockEls?.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        htmlEl.style.transform = '';
+        htmlEl.style.transition = '';
+        htmlEl.style.zIndex = '';
+        htmlEl.style.boxShadow = '';
+        htmlEl.style.opacity = '';
+      });
+
+      // 드래그 블록 위치 커밋
+      updateTimeBlock(date, moveState.blockId, {
+        startSlot: finalTopSlot,
+        endSlot: finalEndSlot,
+      });
+
+      // 밀린 블록들 위치 커밋
+      for (const [blockId, offsetPx] of displacementMap.current) {
+        if (offsetPx !== 0) {
+          const block = timeBlocks.find((b) => b.id === blockId);
+          if (block) {
+            const offsetSlots = Math.round(offsetPx / BLOCK_HEIGHT);
+            updateTimeBlock(date, blockId, {
+              startSlot: block.startSlot + offsetSlots,
+              endSlot: block.endSlot + offsetSlots,
+            });
+          }
+        }
+      }
+
+      displacementMap.current.clear();
+      setMoveState(null);
+      longPressOrigin.current = null;
+      return;
+    }
+
     // 리사이즈 완료 (데스크톱 전용)
     if (resize) {
       const rawSlot = pointerToSlot(e.clientY);
@@ -198,7 +389,6 @@ export default function TimeBox({ date }: { date: string }) {
       const slot = mobileTouch.current.slot;
       mobileTouch.current = null;
       if (dx < 8 && dy < 8) {
-        // 합성 mousedown/click 이벤트 방지 (모달이 즉시 닫히거나 카테고리 오선택 방지)
         e.preventDefault();
         setModal({ mode: 'create', startSlot: slot, endSlot: slot });
       }
@@ -207,16 +397,37 @@ export default function TimeBox({ date }: { date: string }) {
     // 데스크톱 드래그 완료
     if (!isDragging || dragStart === null) return;
     setIsDragging(false);
-    e.preventDefault(); // 합성 이벤트 방지
+    e.preventDefault();
     const end = pointerToSlot(e.clientY);
     const startSlot = Math.min(dragStart, end);
     const endSlot = Math.max(dragStart, end);
     setModal({ mode: 'create', startSlot, endSlot });
     setDragStart(null);
     setDragEnd(null);
-  }, [resize, isMobile, isDragging, dragStart, date, updateTimeBlock, BLOCK_HEIGHT, clampResizeSlot]);
+  }, [resize, isMobile, isDragging, dragStart, moveState, timeBlocks, date, updateTimeBlock, BLOCK_HEIGHT, clampResizeSlot]);
 
   const onPointerCancel = useCallback(() => {
+    // 롱프레스 취소
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+    longPressOrigin.current = null;
+
+    // 이동 모드 취소 — DOM 초기화
+    if (moveState) {
+      gridRef.current?.querySelectorAll('[data-block-id]').forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        htmlEl.style.transform = '';
+        htmlEl.style.transition = '';
+        htmlEl.style.zIndex = '';
+        htmlEl.style.boxShadow = '';
+        htmlEl.style.opacity = '';
+      });
+      setMoveState(null);
+      displacementMap.current.clear();
+    }
+
     mobileTouch.current = null;
     setResize(null);
     if (isDragging) {
@@ -224,7 +435,7 @@ export default function TimeBox({ date }: { date: string }) {
       setDragStart(null);
       setDragEnd(null);
     }
-  }, [isDragging]);
+  }, [isDragging, moveState]);
 
   const highlightStart = dragStart !== null && dragEnd !== null ? Math.min(dragStart, dragEnd) : null;
   const highlightEnd = dragStart !== null && dragEnd !== null ? Math.max(dragStart, dragEnd) : null;
@@ -336,7 +547,7 @@ export default function TimeBox({ date }: { date: string }) {
           <div
             ref={gridRef}
             className="absolute top-0 bottom-0 right-0 no-select"
-            style={{ left: 48, touchAction: isMobile ? 'pan-y' : (isDragging ? 'none' : 'auto') }}
+            style={{ left: 48, touchAction: moveState ? 'none' : isMobile ? 'pan-y' : (isDragging ? 'none' : 'auto') }}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
@@ -395,7 +606,9 @@ export default function TimeBox({ date }: { date: string }) {
                 blockHeight={BLOCK_HEIGHT}
                 onClick={() => setModal({ mode: 'edit', block })}
                 onResizeStart={onResizeStart}
+                onBlockPointerDown={onBlockPointerDown}
                 resizePreview={resize?.blockId === block.id ? resizePreview : null}
+                isBeingMoved={moveState?.blockId === block.id}
                 isMobile={isMobile}
               />
             ))}
@@ -446,14 +659,18 @@ function BlockItem({
   blockHeight,
   onClick,
   onResizeStart,
+  onBlockPointerDown,
   resizePreview,
+  isBeingMoved,
   isMobile,
 }: {
   block: TimeBlock;
   blockHeight: number;
   onClick: () => void;
   onResizeStart: (e: React.PointerEvent, blockId: string, edge: 'top' | 'bottom') => void;
+  onBlockPointerDown: (e: React.PointerEvent, blockId: string) => void;
   resizePreview: { startSlot: number; endSlot: number } | null;
+  isBeingMoved?: boolean;
   isMobile: boolean;
 }) {
   const isDark = useIsDark();
@@ -467,6 +684,7 @@ function BlockItem({
   return (
     <div
       data-block
+      data-block-id={block.id}
       className="absolute w-full rounded-md overflow-hidden"
       style={{
         top: displayStart * blockHeight + 1,
@@ -476,15 +694,17 @@ function BlockItem({
         color: accent.text,
         fontSize: blockHeight > 30 ? 13 : 11,
         fontWeight: 600,
-        zIndex: isResizing ? 20 : 10,
+        zIndex: isResizing ? 20 : isBeingMoved ? 50 : 10,
         opacity: isResizing ? 0.85 : 1,
         cursor: 'pointer',
       }}
       onClick={onClick}
+      onPointerDown={(e) => onBlockPointerDown(e, block.id)}
     >
       {/* 상단 리사이즈 핸들 (데스크톱 전용) */}
       {!isMobile && (
         <div
+          data-resize-handle
           className="absolute top-0 left-0 w-full flex items-center justify-center"
           style={{ height: 8, cursor: 'ns-resize', zIndex: 2 }}
           onPointerDown={(e) => {
@@ -505,6 +725,7 @@ function BlockItem({
       {/* 하단 리사이즈 핸들 (데스크톱 전용) */}
       {!isMobile && (
         <div
+          data-resize-handle
           className="absolute bottom-0 left-0 w-full flex items-center justify-center"
           style={{ height: 8, cursor: 'ns-resize', zIndex: 2 }}
           onPointerDown={(e) => {
