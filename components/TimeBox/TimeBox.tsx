@@ -313,7 +313,7 @@ export default function TimeBox({ date }: { date: string }) {
       </div>
 
       <div className="px-4 pb-4 overflow-y-auto flex-1 max-h-[830px]">
-        <div className="relative" style={{ height: TOTAL_SLOTS * BLOCK_HEIGHT }}>
+        <div className="relative" style={{ height: TOTAL_SLOTS * BLOCK_HEIGHT, marginTop: 8 }}>
           {/* 시간 레이블 (absolute, 격자선에 걸침) */}
           {Array.from({ length: TOTAL_SLOTS }).map((_, i) =>
             i % 2 === 0 ? (
