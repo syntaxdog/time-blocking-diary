@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useDiaryStore } from '@/store/diaryStore';
-import { TOTAL_SLOTS, slotToTime } from '@/lib/utils';
+import { TOTAL_SLOTS, slotToTime, canChangeStartHour } from '@/lib/utils';
 import type { BlockColor, TimeBlock } from '@/types/diary';
 import EventModal from './EventModal';
 
@@ -284,6 +284,10 @@ export default function TimeBox({ date }: { date: string }) {
                     <button
                       key={h}
                       onClick={() => {
+                        if (!canChangeStartHour(timeBlocks, startHour, h)) {
+                          alert('기존 일정이 변경하려는 시간 범위와 충돌합니다. 해당 일정을 먼저 삭제하거나 이동해주세요.');
+                          return;
+                        }
                         setDayStartHour(date, h);
                         setShowStartHourPicker(false);
                       }}
@@ -489,7 +493,7 @@ function BlockItem({
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div style={{ width: 24, height: 2, borderRadius: 1, background: accent.bar, opacity: 0.5 }} />
+          <div style={{ width: 24, height: 2, borderRadius: 1, background: 'currentColor', opacity: 0.2 }} />
         </div>
       )}
 
@@ -509,7 +513,7 @@ function BlockItem({
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div style={{ width: 24, height: 2, borderRadius: 1, background: accent.bar, opacity: 0.5 }} />
+          <div style={{ width: 24, height: 2, borderRadius: 1, background: 'currentColor', opacity: 0.2 }} />
         </div>
       )}
     </div>

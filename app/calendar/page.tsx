@@ -367,22 +367,32 @@ export default function CalendarPage() {
                 </h3>
                 <div className="space-y-3">
                   {scheduleItems.length > 0 ? (
-                    scheduleItems.map((item, idx) => (
-                      <div key={idx} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex gap-4 items-start">
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${item.color === 'red' ? 'bg-red-100 text-red-600' :
-                            item.color === 'green' ? 'bg-green-100 text-green-600' :
-                              item.color === 'purple' ? 'bg-purple-100 text-purple-600' :
-                                item.color === 'yellow' ? 'bg-yellow-100 text-yellow-600' :
-                                  'bg-[var(--color-primary)]/10 text-[var(--color-primary)]'
-                          }`}>
-                          <span className="material-symbols-outlined text-[20px]">event</span>
+                    <>
+                      {scheduleItems.slice(0, 3).map((item, idx) => (
+                        <div key={idx} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex gap-4 items-start">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${item.color === 'red' ? 'bg-red-100 text-red-600' :
+                              item.color === 'green' ? 'bg-green-100 text-green-600' :
+                                item.color === 'purple' ? 'bg-purple-100 text-purple-600' :
+                                  item.color === 'yellow' ? 'bg-yellow-100 text-yellow-600' :
+                                    'bg-[var(--color-primary)]/10 text-[var(--color-primary)]'
+                            }`}>
+                            <span className="material-symbols-outlined text-[20px]">event</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold truncate">{item.title || '(제목 없음)'}</p>
+                            <p className="text-xs text-slate-500 mt-0.5">{item.time}</p>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold truncate">{item.title || '(제목 없음)'}</p>
-                          <p className="text-xs text-slate-500 mt-0.5">{item.time}</p>
-                        </div>
-                      </div>
-                    ))
+                      ))}
+                      {scheduleItems.length > 3 && (
+                        <button
+                          onClick={() => goToDiary(selectedDay)}
+                          className="text-xs text-slate-400 font-medium hover:text-slate-600 hover:underline transition-colors text-center py-1"
+                        >
+                          +{scheduleItems.length - 3}개 더보기
+                        </button>
+                      )}
+                    </>
                   ) : (
                     <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
                       <span className="material-symbols-outlined text-slate-300 text-[32px] mb-2">event_busy</span>

@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { DiaryData, TimeBlock, BrainDumpItem, BigThreeItem } from '@/types/diary';
-import { today, uid } from '@/lib/utils';
+import { today, uid, recalcSlots } from '@/lib/utils';
 import type { DiaryData as DiaryDataType } from '@/types/diary';
 
 // --- DB 동기화 ---
@@ -129,8 +129,10 @@ export const useDiaryStore = create<DiaryStore>()(
       setDayStartHour: (date, hour) => {
         set((s) => {
           const diary = s.diaries[date] ?? emptyDiary(date);
+          const oldHour = diary.timeBoxStartHour ?? s.timeBoxStartHour;
+          const timeBlocks = recalcSlots(diary.timeBlocks, oldHour, hour!) as typeof diary.timeBlocks;
           return {
-            diaries: { ...s.diaries, [date]: { ...diary, timeBoxStartHour: hour, updatedAt: Date.now() } },
+            diaries: { ...s.diaries, [date]: { ...diary, timeBoxStartHour: hour, timeBlocks, updatedAt: Date.now() } },
           };
         });
         withSync(date, get);

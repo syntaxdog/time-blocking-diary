@@ -51,6 +51,40 @@ export const blockColorMap: Record<string, { bg: string; border: string; text: s
   gray:   { bg: 'bg-gray-200',   border: 'border-gray-300',   text: 'text-gray-700'   },
 };
 
+/** 시작시간 변경 가능 여부 검증 (wrap-around 발생 시 false) */
+export function canChangeStartHour(
+  blocks: { startSlot: number; endSlot: number }[],
+  oldHour: number,
+  newHour: number,
+): boolean {
+  if (oldHour === newHour || blocks.length === 0) return true;
+  const delta = (oldHour - newHour) * 2;
+  return blocks.every((b) => {
+    let s = (b.startSlot + delta) % TOTAL_SLOTS;
+    let e = (b.endSlot + delta) % TOTAL_SLOTS;
+    if (s < 0) s += TOTAL_SLOTS;
+    if (e < 0) e += TOTAL_SLOTS;
+    return s <= e;
+  });
+}
+
+/** 시작시간 변경 시 블록 슬롯 재계산 (절대시간 유지) */
+export function recalcSlots(
+  blocks: { startSlot: number; endSlot: number }[],
+  oldHour: number,
+  newHour: number,
+) {
+  if (oldHour === newHour) return blocks;
+  const delta = (oldHour - newHour) * 2;
+  return blocks.map((b) => {
+    let s = (b.startSlot + delta) % TOTAL_SLOTS;
+    let e = (b.endSlot + delta) % TOTAL_SLOTS;
+    if (s < 0) s += TOTAL_SLOTS;
+    if (e < 0) e += TOTAL_SLOTS;
+    return { ...b, startSlot: s, endSlot: e };
+  });
+}
+
 // 간단한 uid
 export function uid(): string {
   return Math.random().toString(36).slice(2, 9);
