@@ -58,7 +58,9 @@ types/
 ## 핵심 타입
 ```ts
 type TimeBlock = { id, startSlot, endSlot, label, color, column: 0|1 }
-// startSlot 0 = 05:00, 1 = 05:30, ... 총 37슬롯 (05:00~23:30)
+// 15분 단위 슬롯 (lib/utils.ts SLOT_MINUTES). startSlot 0 = 시작시간(기본 04:00), 1 = +15분 ... 총 96슬롯. endSlot 포함
+// 예전 30분 데이터(slotMinutes 없음)는 로드 시 migrateDiarySlots()로 자동 변환 (n → 2n ~ 2n+1)
+// 타임박스 우측 상단 15-min / 30-min 토글(store.slotView)은 격자·드래그 스냅 간격만 바꿈 — 저장 데이터는 항상 15분 슬롯
 type DiaryData = { date, bigThree, brainDump, timeBlocks, feedback, futureViz, futureVizImage, identity, motivation, gratitude, morningRoutine, updatedAt? }
 ```
 

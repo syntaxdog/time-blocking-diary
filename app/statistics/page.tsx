@@ -95,7 +95,7 @@ export default function StatisticsPage() {
 
     Object.values(diaries).forEach((diary) => {
       diary.timeBlocks.forEach((tb) => {
-        const slots = tb.endSlot - tb.startSlot;
+        const slots = tb.endSlot - tb.startSlot + 1; // endSlot 포함
         if (colorMap[tb.color]) {
           colorMap[tb.color].count += slots;
         }

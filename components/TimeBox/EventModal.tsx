@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { BlockColor, TimeBlock } from '@/types/diary';
-import { slotToTime, TOTAL_SLOTS } from '@/lib/utils';
+import { slotToTime, TOTAL_SLOTS, SLOT_MINUTES } from '@/lib/utils';
 
 const COLORS: { value: BlockColor; label: string; bg: string; dot: string }[] = [
   { value: 'blue',   label: '업무',      bg: '#eff6ff', dot: '#3b82f6' },
@@ -23,9 +23,10 @@ type Props = {
   onDelete?: () => void;
   suggestions?: string[];
   startHour?: number;
+  step?: number; // ± 버튼 1회 이동량 (15분 슬롯 개수: 15분 보기 = 1, 30분 보기 = 2)
 };
 
-export default function EventModal({ startSlot, endSlot, onConfirm, onCancel, existing, onDelete, suggestions, startHour = 4 }: Props) {
+export default function EventModal({ startSlot, endSlot, onConfirm, onCancel, existing, onDelete, suggestions, startHour = 4, step = 1 }: Props) {
   const [label, setLabel] = useState(existing?.label ?? '');
   const [color, setColor] = useState<BlockColor>(existing?.color ?? 'blue');
   const [localStart, setLocalStart] = useState(startSlot);
@@ -52,7 +53,7 @@ export default function EventModal({ startSlot, endSlot, onConfirm, onCancel, ex
   }
 
   const slots = localEnd - localStart + 1;
-  const totalMin = slots * 30;
+  const totalMin = slots * SLOT_MINUTES;
   const dh = Math.floor(totalMin / 60);
   const dm = totalMin % 60;
   const durationLabel = dh > 0 && dm > 0 ? `${dh}시간 ${dm}분` : dh > 0 ? `${dh}시간` : `${dm}분`;
@@ -79,9 +80,9 @@ export default function EventModal({ startSlot, endSlot, onConfirm, onCancel, ex
 
         {/* 시간 조정 */}
         <div className="flex flex-col gap-2 rounded-xl p-3" style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)' }}>
-          <TimeRow label="시작" time={slotToTime(localStart, startHour)} onMinus={() => adjustStart(-1)} onPlus={() => adjustStart(1)} disableMinus={localStart <= 0} disablePlus={localStart >= localEnd} />
+          <TimeRow label="시작" time={slotToTime(localStart, startHour)} onMinus={() => adjustStart(-step)} onPlus={() => adjustStart(step)} disableMinus={localStart <= 0} disablePlus={localStart >= localEnd} />
           <div style={{ height: 1, background: 'var(--color-border)' }} />
-          <TimeRow label="종료" time={slotToTime(localEnd + 1, startHour)} onMinus={() => adjustEnd(-1)} onPlus={() => adjustEnd(1)} disableMinus={localEnd <= localStart} disablePlus={localEnd >= TOTAL_SLOTS - 1} />
+          <TimeRow label="종료" time={slotToTime(localEnd + 1, startHour)} onMinus={() => adjustEnd(-step)} onPlus={() => adjustEnd(step)} disableMinus={localEnd <= localStart} disablePlus={localEnd >= TOTAL_SLOTS - 1} />
         </div>
 
         {/* 일정명 */}

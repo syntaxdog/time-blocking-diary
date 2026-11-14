@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useDiaryStore } from '@/store/diaryStore';
-import { TOTAL_SLOTS, slotToTime, canChangeStartHour } from '@/lib/utils';
+import { TOTAL_SLOTS, SLOT_MINUTES, SLOTS_PER_HOUR, slotToTime, canChangeStartHour, formatDuration } from '@/lib/utils';
 import type { BlockColor, TimeBlock } from '@/types/diary';
 import EventModal from './EventModal';
 
@@ -23,8 +23,12 @@ function useIsDark() {
   return dark;
 }
 
-const BLOCK_HEIGHT_DESKTOP = 28;
-const BLOCK_HEIGHT_MOBILE = 36;
+// 데이터는 항상 15분 슬롯. 아래 값은 "15분 1칸"의 픽셀 높이 (보기 단위별)
+// 30분 보기 = 예전과 동일한 높이 (30분당 28px / 모바일 36px)
+const UNIT_HEIGHT: Record<15 | 30, { desktop: number; mobile: number }> = {
+  15: { desktop: 16, mobile: 20 },
+  30: { desktop: 14, mobile: 18 },
+};
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
@@ -36,15 +40,6 @@ function useIsMobile() {
     return () => mq.removeEventListener('change', handler);
   }, []);
   return isMobile;
-}
-
-function formatDuration(slots: number): string {
-  const totalMin = slots * 30;
-  const h = Math.floor(totalMin / 60);
-  const m = totalMin % 60;
-  if (h === 0) return `${m}분`;
-  if (m === 0) return `${h}시간`;
-  return `${h}시간 ${m}분`;
 }
 
 type ModalState =
@@ -71,8 +66,12 @@ type MoveState = {
 export default function TimeBox({ date }: { date: string }) {
   const isDark = useIsDark();
   const isMobile = useIsMobile();
-  const BLOCK_HEIGHT = isMobile ? BLOCK_HEIGHT_MOBILE : BLOCK_HEIGHT_DESKTOP;
-  const { diaries, addTimeBlock, updateTimeBlock, removeTimeBlock, timeBoxStartHour: globalStartHour, setDayStartHour } = useDiaryStore();
+  const { diaries, addTimeBlock, updateTimeBlock, removeTimeBlock, timeBoxStartHour: globalStartHour, setDayStartHour, slotView, setSlotView } = useDiaryStore();
+  // 보기 단위: 15분 / 30분 — 격자와 드래그 스냅 간격만 바뀌고 저장 데이터는 15분 슬롯 그대로
+  const view: 15 | 30 = slotView === 15 ? 15 : 30;
+  const step = view / SLOT_MINUTES; // 스냅 간격 (15분 슬롯 개수)
+  // BLOCK_HEIGHT = 15분 슬롯 1개의 픽셀 높이
+  const BLOCK_HEIGHT = isMobile ? UNIT_HEIGHT[view].mobile : UNIT_HEIGHT[view].desktop;
   const timeBlocks = diaries[date]?.timeBlocks ?? [];
   const big3Suggestions = (diaries[date]?.bigThree ?? [])
     .map((b) => b.text.trim())
@@ -117,6 +116,28 @@ export default function TimeBox({ date }: { date: string }) {
     return Math.max(0, Math.min(TOTAL_SLOTS - 1, slot));
   }
 
+  // 포인터가 있는 칸(보기 단위)의 첫 슬롯
+  function pointerToCell(clientY: number): number {
+    return Math.floor(pointerToSlot(clientY) / step) * step;
+  }
+
+  // 칸의 마지막 슬롯 (endSlot은 포함 범위)
+  function cellEnd(cellStart: number): number {
+    return Math.min(TOTAL_SLOTS - 1, cellStart + step - 1);
+  }
+
+  // 리사이즈: 위쪽 핸들은 칸의 시작, 아래쪽 핸들은 칸의 끝에 맞춤
+  function pointerToResizeSlot(clientY: number, edge: 'top' | 'bottom'): number {
+    const cell = pointerToCell(clientY);
+    return edge === 'top' ? cell : cellEnd(cell);
+  }
+
+  // 이동: 원래 위치 기준으로 보기 단위만큼씩 이동 (07:15 블록은 30분 보기에서 07:45, 08:15 …로)
+  function snapTop(rawTop: number, originalStart: number, blockSize: number): number {
+    const delta = Math.round((rawTop - originalStart) / step) * step;
+    return Math.max(0, Math.min(TOTAL_SLOTS - blockSize, originalStart + delta));
+  }
+
   // 리사이즈 시작 핸들러
   const onResizeStart = useCallback((e: React.PointerEvent, blockId: string, edge: 'top' | 'bottom') => {
     e.stopPropagation();
@@ -129,9 +150,9 @@ export default function TimeBox({ date }: { date: string }) {
       edge,
       originalStart: block.startSlot,
       originalEnd: block.endSlot,
-      currentSlot: pointerToSlot(e.clientY),
+      currentSlot: pointerToResizeSlot(e.clientY, edge),
     });
-  }, [timeBlocks, BLOCK_HEIGHT]);
+  }, [timeBlocks, BLOCK_HEIGHT, step]);
 
   const onPointerDown = useCallback((e: React.PointerEvent) => {
     if ((e.target as HTMLElement).closest('[data-block]')) return;
@@ -140,17 +161,17 @@ export default function TimeBox({ date }: { date: string }) {
       mobileTouch.current = {
         startY: e.clientY,
         startX: e.clientX,
-        slot: pointerToSlot(e.clientY),
+        slot: pointerToCell(e.clientY),
       };
     } else {
       // 데스크톱: 즉시 드래그
       e.currentTarget.setPointerCapture(e.pointerId);
-      const slot = pointerToSlot(e.clientY);
+      const slot = pointerToCell(e.clientY);
       setDragStart(slot);
       setDragEnd(slot);
       setIsDragging(true);
     }
-  }, [isMobile, BLOCK_HEIGHT]);
+  }, [isMobile, BLOCK_HEIGHT, step]);
 
   // 리사이즈 시 다른 블록과 겹치지 않도록 슬롯 제한
   const clampResizeSlot = useCallback((slot: number, blockId: string, edge: 'top' | 'bottom', originalStart: number, originalEnd: number) => {
@@ -275,7 +296,7 @@ export default function TimeBox({ date }: { date: string }) {
     // 이동 모드
     if (moveState) {
       const rawSlot = pointerToSlot(e.clientY);
-      const newTopSlot = Math.max(0, Math.min(TOTAL_SLOTS - moveState.blockSize, rawSlot - moveState.grabOffsetSlots));
+      const newTopSlot = snapTop(rawSlot - moveState.grabOffsetSlots, moveState.originalStartSlot, moveState.blockSize);
 
       // 드래그 블록 DOM 직접 조작
       const draggedEl = gridRef.current?.querySelector(`[data-block-id="${moveState.blockId}"]`) as HTMLElement;
@@ -296,14 +317,14 @@ export default function TimeBox({ date }: { date: string }) {
 
     // 리사이즈 중 (데스크톱 전용)
     if (resize) {
-      const rawSlot = pointerToSlot(e.clientY);
+      const rawSlot = pointerToResizeSlot(e.clientY, resize.edge);
       const clampedSlot = clampResizeSlot(rawSlot, resize.blockId, resize.edge, resize.originalStart, resize.originalEnd);
       setResize((prev) => prev ? { ...prev, currentSlot: clampedSlot } : null);
       return;
     }
     if (!isDragging) return;
-    setDragEnd(pointerToSlot(e.clientY));
-  }, [resize, isDragging, moveState, BLOCK_HEIGHT, clampResizeSlot, calculateDisplacement]);
+    setDragEnd(pointerToCell(e.clientY));
+  }, [resize, isDragging, moveState, BLOCK_HEIGHT, step, clampResizeSlot, calculateDisplacement]);
 
   const onPointerUp = useCallback((e: React.PointerEvent) => {
     // 롱프레스 타이머 취소
@@ -327,7 +348,7 @@ export default function TimeBox({ date }: { date: string }) {
     // 이동 모드 드롭
     if (moveState) {
       const rawSlot = pointerToSlot(e.clientY);
-      const finalTopSlot = Math.max(0, Math.min(TOTAL_SLOTS - moveState.blockSize, rawSlot - moveState.grabOffsetSlots));
+      const finalTopSlot = snapTop(rawSlot - moveState.grabOffsetSlots, moveState.originalStartSlot, moveState.blockSize);
       const finalEndSlot = finalTopSlot + moveState.blockSize - 1;
 
       // 모든 DOM 스타일 초기화
@@ -369,7 +390,7 @@ export default function TimeBox({ date }: { date: string }) {
 
     // 리사이즈 완료 (데스크톱 전용)
     if (resize) {
-      const rawSlot = pointerToSlot(e.clientY);
+      const rawSlot = pointerToResizeSlot(e.clientY, resize.edge);
       const slot = clampResizeSlot(rawSlot, resize.blockId, resize.edge, resize.originalStart, resize.originalEnd);
       let newStart = resize.originalStart;
       let newEnd = resize.originalEnd;
@@ -390,7 +411,7 @@ export default function TimeBox({ date }: { date: string }) {
       mobileTouch.current = null;
       if (dx < 8 && dy < 8) {
         e.preventDefault();
-        setModal({ mode: 'create', startSlot: slot, endSlot: slot });
+        setModal({ mode: 'create', startSlot: slot, endSlot: cellEnd(slot) });
       }
       return;
     }
@@ -398,13 +419,13 @@ export default function TimeBox({ date }: { date: string }) {
     if (!isDragging || dragStart === null) return;
     setIsDragging(false);
     e.preventDefault();
-    const end = pointerToSlot(e.clientY);
+    const end = pointerToCell(e.clientY);
     const startSlot = Math.min(dragStart, end);
-    const endSlot = Math.max(dragStart, end);
+    const endSlot = cellEnd(Math.max(dragStart, end));
     setModal({ mode: 'create', startSlot, endSlot });
     setDragStart(null);
     setDragEnd(null);
-  }, [resize, isMobile, isDragging, dragStart, moveState, timeBlocks, date, updateTimeBlock, BLOCK_HEIGHT, clampResizeSlot]);
+  }, [resize, isMobile, isDragging, dragStart, moveState, timeBlocks, date, updateTimeBlock, BLOCK_HEIGHT, step, clampResizeSlot]);
 
   const onPointerCancel = useCallback(() => {
     // 롱프레스 취소
@@ -438,7 +459,7 @@ export default function TimeBox({ date }: { date: string }) {
   }, [isDragging, moveState]);
 
   const highlightStart = dragStart !== null && dragEnd !== null ? Math.min(dragStart, dragEnd) : null;
-  const highlightEnd = dragStart !== null && dragEnd !== null ? Math.max(dragStart, dragEnd) : null;
+  const highlightEnd = dragStart !== null && dragEnd !== null ? cellEnd(Math.max(dragStart, dragEnd)) : null;
 
   // 리사이즈 미리보기 슬롯 계산
   const resizePreview = resize
@@ -515,7 +536,25 @@ export default function TimeBox({ date }: { date: string }) {
               </div>
             )}
           </div>
-          <span className="text-[10px] font-bold bg-slate-100 px-2 py-1 rounded">30-min</span>
+          {/* 보기 단위 토글 (15분 / 30분) */}
+          <div className="flex items-center bg-slate-100 rounded p-0.5" role="group" aria-label="시간 단위">
+            {([15, 30] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setSlotView(m)}
+                aria-pressed={view === m}
+                title={`${m}분 단위로 보기`}
+                className={`text-[10px] font-bold px-2 py-0.5 rounded transition-colors ${
+                  view === m
+                    ? 'bg-[var(--color-primary)] text-white shadow-sm'
+                    : 'text-slate-500 hover:bg-slate-200'
+                }`}
+              >
+                {m}-min
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -527,7 +566,7 @@ export default function TimeBox({ date }: { date: string }) {
         <div className="relative" style={{ height: TOTAL_SLOTS * BLOCK_HEIGHT, marginTop: 8 }}>
           {/* 시간 레이블 (absolute, 격자선에 걸침) */}
           {Array.from({ length: TOTAL_SLOTS }).map((_, i) =>
-            i % 2 === 0 ? (
+            i % SLOTS_PER_HOUR === 0 ? (
               <div key={`t${i}`} className="absolute left-0 text-right pr-2"
                 style={{
                   top: i * BLOCK_HEIGHT,
@@ -553,28 +592,38 @@ export default function TimeBox({ date }: { date: string }) {
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerCancel}
           >
-            {/* 슬롯 배경선 */}
-            {Array.from({ length: TOTAL_SLOTS }).map((_, i) => (
-              <div key={i} className="absolute w-full"
-                style={{
-                  top: i * BLOCK_HEIGHT,
-                  height: BLOCK_HEIGHT,
-                  borderTop: i % 2 === 0
-                    ? `1px solid ${isDark ? '#334155' : '#e2e8f0'}`
-                    : `1px dashed ${isDark ? '#1e293b' : '#f1f5f9'}`,
-                  background: i % 2 === 0
-                    ? (isDark ? '#1a2332' : '#f8fafc')
-                    : 'var(--color-surface)',
-                }} />
-            ))}
+            {/* 슬롯 배경선 (보기 단위마다 1칸): 정시 = 실선, 30분 = 점선, 15/45분 = 연한 점선 */}
+            {Array.from({ length: TOTAL_SLOTS / step }).map((_, row) => {
+              const i = row * step;
+              const isHour = i % SLOTS_PER_HOUR === 0;
+              const isHalf = i % (SLOTS_PER_HOUR / 2) === 0;
+              const borderTop = isHour
+                ? `1px solid ${isDark ? '#334155' : '#e2e8f0'}`
+                : isHalf
+                  ? `1px dashed ${isDark ? '#1e293b' : '#e9eef5'}`
+                  : `1px dotted ${isDark ? '#18212f' : '#f5f7fa'}`;
+              // 30분 단위로 배경 교차 (기존 느낌 유지)
+              const shaded = Math.floor(i / (SLOTS_PER_HOUR / 2)) % 2 === 0;
+              return (
+                <div key={i} className="absolute w-full"
+                  style={{
+                    top: i * BLOCK_HEIGHT,
+                    height: BLOCK_HEIGHT * step,
+                    borderTop,
+                    background: shaded
+                      ? (isDark ? '#1a2332' : '#f8fafc')
+                      : 'var(--color-surface)',
+                  }} />
+              );
+            })}
 
             {/* 드래그 하이라이트 */}
             {highlightStart !== null && highlightEnd !== null && (() => {
               const slots = highlightEnd - highlightStart + 1;
               const top = highlightStart * BLOCK_HEIGHT;
               const height = slots * BLOCK_HEIGHT;
-              const labelAbove = slots <= 2 && top >= 28;
-              const labelBelow = slots <= 2 && top < 28;
+              const labelAbove = height < 40 && top >= 28;
+              const labelBelow = height < 40 && top < 28;
               return (
                 <>
                   {/* 배경 오버레이 */}
@@ -627,6 +676,7 @@ export default function TimeBox({ date }: { date: string }) {
           onDelete={modal.mode === 'edit' ? handleDelete : undefined}
           suggestions={modal.mode === 'create' ? big3Suggestions : undefined}
           startHour={startHour}
+          step={step}
         />
       )}
     </section>
@@ -680,6 +730,9 @@ function BlockItem({
   const displayStart = resizePreview?.startSlot ?? block.startSlot;
   const displayEnd = resizePreview?.endSlot ?? block.endSlot;
   const isResizing = resizePreview !== null;
+  const boxHeight = (displayEnd - displayStart + 1) * blockHeight - 2;
+  // 15분짜리 짧은 블록에서도 핸들이 블록 전체를 덮지 않도록 높이 제한
+  const handleHeight = Math.max(3, Math.min(8, Math.floor(boxHeight / 3)));
 
   return (
     <div
@@ -688,11 +741,12 @@ function BlockItem({
       className="absolute w-full rounded-md overflow-hidden"
       style={{
         top: displayStart * blockHeight + 1,
-        height: (displayEnd - displayStart + 1) * blockHeight - 2,
+        height: boxHeight,
         background: accent.bg,
         borderLeft: `3px solid ${accent.bar}`,
         color: accent.text,
-        fontSize: blockHeight > 30 ? 13 : 11,
+        fontSize: isMobile && boxHeight >= 24 ? 13 : 11,
+        lineHeight: 1.2,
         fontWeight: 600,
         zIndex: isResizing ? 20 : isBeingMoved ? 50 : 10,
         opacity: isResizing ? 0.85 : 1,
@@ -706,7 +760,7 @@ function BlockItem({
         <div
           data-resize-handle
           className="absolute top-0 left-0 w-full flex items-center justify-center"
-          style={{ height: 8, cursor: 'ns-resize', zIndex: 2 }}
+          style={{ height: handleHeight, cursor: 'ns-resize', zIndex: 2 }}
           onPointerDown={(e) => {
             e.stopPropagation();
             onResizeStart(e, block.id, 'top');
@@ -718,7 +772,7 @@ function BlockItem({
       )}
 
       {/* 레이블 */}
-      <div className="flex items-center h-full" style={{ paddingLeft: 8, paddingRight: 4, paddingTop: 8, paddingBottom: 8 }}>
+      <div className="flex items-center h-full" style={{ paddingLeft: 8, paddingRight: 4 }}>
         <span className="truncate">{block.label}</span>
       </div>
 
@@ -727,7 +781,7 @@ function BlockItem({
         <div
           data-resize-handle
           className="absolute bottom-0 left-0 w-full flex items-center justify-center"
-          style={{ height: 8, cursor: 'ns-resize', zIndex: 2 }}
+          style={{ height: handleHeight, cursor: 'ns-resize', zIndex: 2 }}
           onPointerDown={(e) => {
             e.stopPropagation();
             onResizeStart(e, block.id, 'bottom');

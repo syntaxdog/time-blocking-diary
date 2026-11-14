@@ -1,13 +1,44 @@
+// 슬롯 단위 (분)
+export const SLOT_MINUTES = 15;
+export const SLOTS_PER_HOUR = 60 / SLOT_MINUTES;
+
 // 슬롯 번호 → 시간 문자열 (startHour 기준, 기본 4시)
 export function slotToTime(slot: number, startHour: number = 4): string {
-  const totalMinutes = (startHour * 60 + slot * 30) % (24 * 60);
+  const totalMinutes = (startHour * 60 + slot * SLOT_MINUTES) % (24 * 60);
   const h = Math.floor(totalMinutes / 60);
   const m = totalMinutes % 60;
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
-// 총 슬롯 수: 04:00 ~ 03:30 → 48슬롯
-export const TOTAL_SLOTS = 48;
+// 총 슬롯 수: 24시간 × 4 → 96슬롯 (15분 단위)
+export const TOTAL_SLOTS = 24 * SLOTS_PER_HOUR;
+
+// 슬롯 개수 → "1시간 15분" 형식
+export function formatDuration(slots: number): string {
+  const totalMin = slots * SLOT_MINUTES;
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h === 0) return `${m}분`;
+  if (m === 0) return `${h}시간`;
+  return `${h}시간 ${m}분`;
+}
+
+/**
+ * 30분 단위로 저장된 예전 다이어리를 15분 단위로 변환.
+ * slotMinutes가 없으면 30분 데이터로 간주 — 30분 슬롯 n → 15분 슬롯 2n ~ 2n+1.
+ */
+export function migrateDiarySlots<T extends { timeBlocks?: { startSlot: number; endSlot: number }[]; slotMinutes?: number }>(diary: T): T {
+  if (!diary || diary.slotMinutes === SLOT_MINUTES) return diary;
+  return {
+    ...diary,
+    timeBlocks: (diary.timeBlocks ?? []).map((b) => ({
+      ...b,
+      startSlot: b.startSlot * 2,
+      endSlot: b.endSlot * 2 + 1,
+    })),
+    slotMinutes: SLOT_MINUTES,
+  };
+}
 
 // 날짜 포맷 YYYY-MM-DD
 export function formatDate(date: Date): string {
@@ -58,7 +89,7 @@ export function canChangeStartHour(
   newHour: number,
 ): boolean {
   if (oldHour === newHour || blocks.length === 0) return true;
-  const delta = (oldHour - newHour) * 2;
+  const delta = (oldHour - newHour) * SLOTS_PER_HOUR;
   return blocks.every((b) => {
     let s = (b.startSlot + delta) % TOTAL_SLOTS;
     let e = (b.endSlot + delta) % TOTAL_SLOTS;
@@ -75,7 +106,7 @@ export function recalcSlots(
   newHour: number,
 ) {
   if (oldHour === newHour) return blocks;
-  const delta = (oldHour - newHour) * 2;
+  const delta = (oldHour - newHour) * SLOTS_PER_HOUR;
   return blocks.map((b) => {
     let s = (b.startSlot + delta) % TOTAL_SLOTS;
     let e = (b.endSlot + delta) % TOTAL_SLOTS;

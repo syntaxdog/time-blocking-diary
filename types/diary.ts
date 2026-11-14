@@ -1,6 +1,6 @@
 export type TimeBlock = {
   id: string;
-  startSlot: number; // 0 = 05:00, 1 = 05:30, ...
+  startSlot: number; // 15분 단위. 0 = 시작시간, 1 = +15분, ... (endSlot 포함)
   endSlot: number;
   label: string;
   color: BlockColor;
@@ -39,5 +39,6 @@ export type DiaryData = {
   gratitude: [string, string, string];
   morningRoutine: string;
   timeBoxStartHour?: number; // 날짜별 타임박스 시작시간 오버라이드 (0-23)
+  slotMinutes?: number; // 슬롯 단위(분). 없으면 예전 30분 데이터 → 로드 시 15분으로 변환
   updatedAt?: number; // ms timestamp – last modification time
 };

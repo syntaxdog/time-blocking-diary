@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { DiaryData, TimeBlock, BrainDumpItem, BigThreeItem } from '@/types/diary';
-import { today, uid, recalcSlots } from '@/lib/utils';
+import { today, uid, recalcSlots, migrateDiarySlots, SLOT_MINUTES } from '@/lib/utils';
 import type { DiaryData as DiaryDataType } from '@/types/diary';
 
 // --- DB 동기화 ---
@@ -51,6 +51,7 @@ function emptyDiary(date: string): DiaryData {
     motivation: '',
     gratitude: ['', '', ''],
     morningRoutine: '',
+    slotMinutes: SLOT_MINUTES,
   };
 }
 
@@ -109,6 +110,10 @@ type DiaryStore = {
   // 날짜별 타임박스 시작시간 오버라이드
   setDayStartHour: (date: string, hour: number | undefined) => void;
 
+  // 타임박스 보기 단위 (15분 / 30분) — 화면 격자·스냅만 바뀌고 데이터는 항상 15분 슬롯
+  slotView: 15 | 30;
+  setSlotView: (minutes: 15 | 30) => void;
+
   // DB 동기화
   loadFromDb: () => Promise<void>;
   _dbLoaded: boolean;
@@ -126,6 +131,8 @@ export const useDiaryStore = create<DiaryStore>()(
 
       timeBoxStartHour: 4,
       setTimeBoxStartHour: (hour) => set({ timeBoxStartHour: hour }),
+      slotView: 30,
+      setSlotView: (minutes) => set({ slotView: minutes }),
       setDayStartHour: (date, hour) => {
         set((s) => {
           const diary = s.diaries[date] ?? emptyDiary(date);
@@ -148,7 +155,8 @@ export const useDiaryStore = create<DiaryStore>()(
           const dbDiaries = (await res.json()) as Record<string, DiaryData>;
           set((s) => {
             const merged = { ...s.diaries };
-            for (const [date, dbDiary] of Object.entries(dbDiaries)) {
+            for (const [date, rawDbDiary] of Object.entries(dbDiaries)) {
+              const dbDiary = migrateDiarySlots(rawDbDiary);
               const local = merged[date];
               if (!local || (dbDiary.updatedAt ?? 0) > (local.updatedAt ?? 0)) {
                 merged[date] = dbDiary;
@@ -364,7 +372,8 @@ export const useDiaryStore = create<DiaryStore>()(
               ? { text: item as unknown as string, checked: false }
               : item
           ) as [BigThreeItem, BigThreeItem, BigThreeItem];
-          migrated[date] = { ...diary, bigThree };
+          // 30분 단위 → 15분 단위 슬롯 변환
+          migrated[date] = migrateDiarySlots({ ...diary, bigThree });
         }
         state.diaries = migrated;
       },
